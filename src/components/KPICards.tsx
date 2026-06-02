@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, DollarSign, ShieldAlert } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShieldAlert, Activity } from 'lucide-react';
 import { Challenge } from '@/lib/db';
 
 interface KPICardsProps {
@@ -40,6 +40,10 @@ export default function KPICards({ challenges }: KPICardsProps) {
   const winrate = challenges.length > 0 
     ? Math.round((challengeTotals.filter(t => t > 0).length / challenges.length) * 100) 
     : 0;
+
+  // 6. Comptes Actifs = challenges whose cumulative total is still negative
+  //    (cost not yet recovered = account still alive / in play)
+  const activeAccounts = challengeTotals.filter(t => t < 0).length;
 
   // Format currency helper
   const formatCurrency = (val: number) => {
@@ -92,10 +96,20 @@ export default function KPICards({ challenges }: KPICardsProps) {
       borderColor: netPnL >= 0 ? 'group-hover:border-emerald-500/20 border-zinc-800/60' : 'group-hover:border-rose-500/20 border-zinc-800/60',
       iconBg: netPnL >= 0 ? 'bg-emerald-950/30 border-emerald-900/40 text-emerald-400' : 'bg-rose-950/30 border-rose-900/40 text-rose-400',
     },
+    {
+      title: 'Comptes Actifs',
+      value: `${activeAccounts}`,
+      description: `${activeAccounts} sur ${challenges.length} compte${challenges.length > 1 ? 's' : ''} encore actif${activeAccounts > 1 ? 's' : ''}`,
+      icon: Activity,
+      color: 'text-sky-400',
+      bgGlow: 'from-sky-500/10 to-transparent',
+      borderColor: 'group-hover:border-sky-500/20 border-zinc-800/60',
+      iconBg: 'bg-sky-950/30 border-sky-900/40 text-sky-400',
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {metrics.map((m, idx) => {
         const IconComponent = m.icon;
         return (

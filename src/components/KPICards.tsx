@@ -45,8 +45,7 @@ export default function KPICards({ challenges }: KPICardsProps) {
   //    (cost not yet recovered = account still alive / in play)
   const activeAccounts = challengeTotals.filter(t => t < 0).length;
 
-  // 7. Gains Bruts = somme de chaque chiffre positif dans chaque ligne du tableau
-  //    (toutes colonnes confondues : cost, phase2..phase9)
+  // 7. Gains Bruts = sum of all individual positive numbers − dette cumulée − |pertes totales|
   const totalPositifsBruts = challenges.reduce((sum, c) => {
     const positives = [
       c.cost,
@@ -61,6 +60,7 @@ export default function KPICards({ challenges }: KPICardsProps) {
     ].filter((v): v is number => v !== null && v !== undefined && v > 0);
     return sum + positives.reduce((s, v) => s + v, 0);
   }, 0);
+  const gainsBruts = totalPositifsBruts - totalDebt - Math.abs(totalPertes);
 
   // Format currency helper
   const formatCurrency = (val: number) => {
@@ -125,8 +125,8 @@ export default function KPICards({ challenges }: KPICardsProps) {
     },
     {
       title: 'Gains Bruts',
-      value: formatCurrency(totalPositifsBruts),
-      description: 'Somme de tous les chiffres positifs du tableau',
+      value: formatCurrency(gainsBruts),
+      description: `Positifs bruts (${formatCurrency(totalPositifsBruts)}) − dette − pertes`,
       icon: Sigma,
       color: 'text-violet-400',
       bgGlow: 'from-violet-500/10 to-transparent',

@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, DollarSign, ShieldAlert, Activity, Sigma } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShieldAlert, Activity, Coins } from 'lucide-react';
 import { Challenge } from '@/lib/db';
 
 interface KPICardsProps {
@@ -45,10 +45,13 @@ export default function KPICards({ challenges }: KPICardsProps) {
   //    (cost not yet recovered = account still alive / in play)
   const activeAccounts = challengeTotals.filter(t => t < 0).length;
 
-  // 7. Gains Bruts = sum of all individual positive numbers − dette cumulée − |pertes totales|
-  const totalPositifsBruts = challenges.reduce((sum, c) => {
-    const positives = [
-      c.cost,
+  // 7. Bénéfices Ajustés = Total Benefices - absolute totals of negative challenges that have at least one positive phase value in their row
+  const specialChallengesTotalLoss = challenges.reduce((sum, c) => {
+    const total = getChallengeTotal(c);
+    if (total >= 0) return sum;
+
+    // Check if there is a positive value in the row phases (excluding cost)
+    const hasPositivePhase = [
       c.phase2_day1,
       c.phase3_day2,
       c.phase4_funded_day1,
@@ -57,10 +60,15 @@ export default function KPICards({ challenges }: KPICardsProps) {
       c.phase7_funded_day4,
       c.phase8_funded_day5,
       c.phase9_payout,
-    ].filter((v): v is number => v !== null && v !== undefined && v > 0);
-    return sum + positives.reduce((s, v) => s + v, 0);
+    ].some(val => val !== null && val > 0);
+
+    if (hasPositivePhase) {
+      return sum + total; // total is negative, so adding it reduces the sum (subtracts the loss)
+    }
+    return sum;
   }, 0);
-  const gainsBruts = totalPositifsBruts - totalDebt - Math.abs(totalPertes);
+
+  const adjustedBenefices = totalBenefices + specialChallengesTotalLoss;
 
   // Format currency helper
   const formatCurrency = (val: number) => {
@@ -94,6 +102,16 @@ export default function KPICards({ challenges }: KPICardsProps) {
       iconBg: 'bg-emerald-950/30 border-emerald-900/40 text-emerald-400',
     },
     {
+      title: 'Bénéfices Ajustés',
+      value: formatCurrency(adjustedBenefices),
+      description: 'Bénéfices moins pertes des comptes partiels',
+      icon: Coins,
+      color: 'text-teal-400',
+      bgGlow: 'from-teal-500/10 to-transparent',
+      borderColor: 'group-hover:border-teal-500/20 border-zinc-800/60',
+      iconBg: 'bg-teal-950/30 border-teal-900/40 text-teal-400',
+    },
+    {
       title: 'Pertes Totales',
       value: formatCurrency(totalPertes),
       description: 'Performance des comptes négatifs',
@@ -123,20 +141,10 @@ export default function KPICards({ challenges }: KPICardsProps) {
       borderColor: 'group-hover:border-sky-500/20 border-zinc-800/60',
       iconBg: 'bg-sky-950/30 border-sky-900/40 text-sky-400',
     },
-    {
-      title: 'Gains Bruts',
-      value: formatCurrency(gainsBruts),
-      description: `Positifs bruts (${formatCurrency(totalPositifsBruts)}) − dette − pertes`,
-      icon: Sigma,
-      color: 'text-violet-400',
-      bgGlow: 'from-violet-500/10 to-transparent',
-      borderColor: 'group-hover:border-violet-500/20 border-zinc-800/60',
-      iconBg: 'bg-violet-950/30 border-violet-900/40 text-violet-400',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
       {metrics.map((m, idx) => {
         const IconComponent = m.icon;
         return (

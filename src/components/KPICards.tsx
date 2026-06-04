@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, DollarSign, ShieldAlert, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShieldAlert, Activity, Sigma } from 'lucide-react';
 import { Challenge } from '@/lib/db';
 
 interface KPICardsProps {
@@ -44,6 +44,23 @@ export default function KPICards({ challenges }: KPICardsProps) {
   // 6. Comptes Actifs = challenges whose cumulative total is still negative
   //    (cost not yet recovered = account still alive / in play)
   const activeAccounts = challengeTotals.filter(t => t < 0).length;
+
+  // 7. Gains Bruts = somme de chaque chiffre positif dans chaque ligne du tableau
+  //    (toutes colonnes confondues : cost, phase2..phase9)
+  const totalPositifsBruts = challenges.reduce((sum, c) => {
+    const vals = [
+      c.cost,
+      c.phase2_day1,
+      c.phase3_day2,
+      c.phase4_funded_day1,
+      c.phase5_funded_day2,
+      c.phase6_funded_day3,
+      c.phase7_funded_day4,
+      c.phase8_funded_day5,
+      c.phase9_payout,
+    ];
+    return sum + vals.reduce((s, v) => s + (v !== null && v !== undefined && v > 0 ? v : 0), 0);
+  }, 0);
 
   // Format currency helper
   const formatCurrency = (val: number) => {
@@ -106,10 +123,20 @@ export default function KPICards({ challenges }: KPICardsProps) {
       borderColor: 'group-hover:border-sky-500/20 border-zinc-800/60',
       iconBg: 'bg-sky-950/30 border-sky-900/40 text-sky-400',
     },
+    {
+      title: 'Gains Bruts',
+      value: formatCurrency(totalPositifsBruts),
+      description: 'Somme de tous les chiffres positifs du tableau',
+      icon: Sigma,
+      color: 'text-violet-400',
+      bgGlow: 'from-violet-500/10 to-transparent',
+      borderColor: 'group-hover:border-violet-500/20 border-zinc-800/60',
+      iconBg: 'bg-violet-950/30 border-violet-900/40 text-violet-400',
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {metrics.map((m, idx) => {
         const IconComponent = m.icon;
         return (

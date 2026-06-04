@@ -59,7 +59,7 @@ export default function KPICards({ challenges }: KPICardsProps) {
       c.phase8_funded_day5,
       c.phase9_payout,
     ];
-    return sum + vals.reduce((s, v) => s + (v !== null && v !== undefined && v > 0 ? v : 0), 0);
+    return sum + vals.reduce((s, v) => s + ((v ?? 0) > 0 ? (v ?? 0) : 0), 0);
   }, 0);
 
   // Format currency helper

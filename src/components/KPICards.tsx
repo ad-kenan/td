@@ -1,14 +1,18 @@
-import { TrendingUp, TrendingDown, DollarSign, ShieldAlert, Activity, Coins } from 'lucide-react';
-import { Challenge } from '@/lib/db';
+import { TrendingUp, TrendingDown, DollarSign, ShieldAlert, Activity, Coins, ArrowDownToLine } from 'lucide-react';
+import { Challenge, Payout } from '@/lib/db';
 
 interface KPICardsProps {
   challenges: Challenge[];
+  payouts?: Payout[];
 }
 
-export default function KPICards({ challenges }: KPICardsProps) {
+export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
   // Calculate financial metrics
   // 1. Debt (Dette) = Sum of absolute values of cost (Phase 1)
   const totalDebt = challenges.reduce((sum, c) => sum + Math.abs(c.cost || 0), 0);
+
+  // 2. Personal Payouts = Sum of all personal payouts
+  const totalPayouts = payouts.reduce((sum, p) => sum + (p.amount || 0), 0);
 
   // Helper: calculate total PnL for a challenge
   const getChallengeTotal = (c: Challenge) => {
@@ -27,25 +31,25 @@ export default function KPICards({ challenges }: KPICardsProps) {
 
   const challengeTotals = challenges.map(getChallengeTotal);
 
-  // 2. Total Benefices = Sum of positive challenge totals
+  // 3. Total Benefices = Sum of positive challenge totals
   const totalBenefices = challengeTotals.filter(t => t > 0).reduce((sum, t) => sum + t, 0);
 
-  // 3. Total Pertes = Sum of negative challenge totals
+  // 4. Total Pertes = Sum of negative challenge totals
   const totalPertes = challengeTotals.filter(t => t < 0).reduce((sum, t) => sum + t, 0);
 
-  // 4. Net PnL = Total Benefices + Total Pertes
+  // 5. Net PnL = Total Benefices + Total Pertes
   const netPnL = totalBenefices + totalPertes;
 
-  // 5. Winrate = Percentage of challenges with positive PnL
+  // 6. Winrate = Percentage of challenges with positive PnL
   const winrate = challenges.length > 0 
     ? Math.round((challengeTotals.filter(t => t > 0).length / challenges.length) * 100) 
     : 0;
 
-  // 6. Comptes Actifs = challenges whose cumulative total is still negative
+  // 7. Comptes Actifs = challenges whose cumulative total is still negative
   //    (cost not yet recovered = account still alive / in play)
   const activeAccounts = challengeTotals.filter(t => t < 0).length;
 
-  // 7. Bénéfices Ajustés = Total Benefices - absolute totals of negative challenges that have at least one positive phase value in their row
+  // 8. Bénéfices Ajustés = Total Benefices - absolute totals of negative challenges that have at least one positive phase value in their row - totalPayouts
   const specialChallengesTotalLoss = challenges.reduce((sum, c) => {
     const total = getChallengeTotal(c);
     if (total >= 0) return sum;
@@ -68,7 +72,7 @@ export default function KPICards({ challenges }: KPICardsProps) {
     return sum;
   }, 0);
 
-  const adjustedBenefices = totalBenefices + specialChallengesTotalLoss;
+  const adjustedBenefices = totalBenefices + specialChallengesTotalLoss - totalPayouts;
 
   // Format currency helper
   const formatCurrency = (val: number) => {
@@ -82,7 +86,7 @@ export default function KPICards({ challenges }: KPICardsProps) {
 
   const metrics = [
     {
-      title: 'Dette Cumulée',
+      title: 'Dette',
       value: formatCurrency(totalDebt),
       description: "Prix d'achat des challenges",
       icon: ShieldAlert,
@@ -92,9 +96,9 @@ export default function KPICards({ challenges }: KPICardsProps) {
       iconBg: 'bg-zinc-950/60 border-zinc-800/80 text-zinc-400',
     },
     {
-      title: 'Bénéfices Totaux',
+      title: 'Bénéfices',
       value: formatCurrency(totalBenefices),
-      description: 'Performance des comptes positifs',
+      description: 'Comptes en positif',
       icon: TrendingUp,
       color: 'text-emerald-400',
       bgGlow: 'from-emerald-500/10 to-transparent',
@@ -102,9 +106,9 @@ export default function KPICards({ challenges }: KPICardsProps) {
       iconBg: 'bg-emerald-950/30 border-emerald-900/40 text-emerald-400',
     },
     {
-      title: 'Bénéfices Ajustés',
+      title: 'Bénéf. ajustés',
       value: formatCurrency(adjustedBenefices),
-      description: 'Bénéfices moins pertes des comptes partiels',
+      description: 'Après pertes partielles et retraits',
       icon: Coins,
       color: 'text-teal-400',
       bgGlow: 'from-teal-500/10 to-transparent',
@@ -112,9 +116,19 @@ export default function KPICards({ challenges }: KPICardsProps) {
       iconBg: 'bg-teal-950/30 border-teal-900/40 text-teal-400',
     },
     {
-      title: 'Pertes Totales',
+      title: 'Retraits perso',
+      value: formatCurrency(totalPayouts),
+      description: 'Fonds retirés des bénéfices',
+      icon: ArrowDownToLine,
+      color: 'text-amber-400',
+      bgGlow: 'from-amber-500/10 to-transparent',
+      borderColor: 'group-hover:border-amber-500/20 border-zinc-800/60',
+      iconBg: 'bg-amber-950/30 border-amber-900/40 text-amber-400',
+    },
+    {
+      title: 'Pertes',
       value: formatCurrency(totalPertes),
-      description: 'Performance des comptes négatifs',
+      description: 'Comptes en négatif',
       icon: TrendingDown,
       color: 'text-rose-400',
       bgGlow: 'from-rose-500/10 to-transparent',
@@ -122,9 +136,9 @@ export default function KPICards({ challenges }: KPICardsProps) {
       iconBg: 'bg-rose-950/30 border-rose-900/40 text-rose-400',
     },
     {
-      title: 'PnL Net Global',
+      title: 'PnL Net',
       value: formatCurrency(netPnL),
-      description: `Winrate: ${winrate}% sur ${challenges.length} challenge${challenges.length > 1 ? 's' : ''}`,
+      description: `Winrate: ${winrate}% · ${challenges.length} challenge${challenges.length > 1 ? 's' : ''}`,
       icon: DollarSign,
       color: netPnL >= 0 ? 'text-emerald-400' : 'text-rose-400',
       bgGlow: netPnL >= 0 ? 'from-emerald-500/10 to-transparent' : 'from-rose-500/10 to-transparent',
@@ -132,9 +146,9 @@ export default function KPICards({ challenges }: KPICardsProps) {
       iconBg: netPnL >= 0 ? 'bg-emerald-950/30 border-emerald-900/40 text-emerald-400' : 'bg-rose-950/30 border-rose-900/40 text-rose-400',
     },
     {
-      title: 'Comptes Actifs',
+      title: 'Comptes actifs',
       value: `${activeAccounts}`,
-      description: `${activeAccounts} sur ${challenges.length} compte${challenges.length > 1 ? 's' : ''} encore actif${activeAccounts > 1 ? 's' : ''}`,
+      description: `${activeAccounts}/${challenges.length} encore en cours`,
       icon: Activity,
       color: 'text-sky-400',
       bgGlow: 'from-sky-500/10 to-transparent',
@@ -143,35 +157,34 @@ export default function KPICards({ challenges }: KPICardsProps) {
     },
   ];
 
+
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
       {metrics.map((m, idx) => {
         const IconComponent = m.icon;
         return (
           <div
             key={idx}
-            className={`glass-card group relative min-h-[152px] overflow-hidden rounded-[24px] border p-5 sm:p-6 ${m.borderColor}`}
+            className={`glass-card group relative min-h-[130px] rounded-[20px] border p-4 ${m.borderColor}`}
           >
-            <div className={`absolute -right-10 -top-6 h-32 w-32 rounded-full bg-gradient-to-br ${m.bgGlow} opacity-80 blur-3xl transition-all duration-500 group-hover:scale-125`} />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_45%)] opacity-50" />
+            <div className={`absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br ${m.bgGlow} opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125`} />
+            <div className="pointer-events-none absolute inset-0 rounded-[20px] bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_45%)] opacity-50" />
 
-            <div className="relative flex h-full flex-col justify-between gap-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                    {m.title}
-                  </span>
-                </div>
-                <div className={`flex h-10 w-10 items-center justify-center rounded-2xl border ${m.iconBg}`}>
-                  <IconComponent className="h-4 w-4" />
+            <div className="relative flex h-full flex-col justify-between gap-3">
+              <div className="flex items-start justify-between gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500 leading-tight">
+                  {m.title}
+                </span>
+                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border ${m.iconBg}`}>
+                  <IconComponent className="h-3 w-3" />
                 </div>
               </div>
 
               <div>
-                <h3 className={`text-2xl font-bold font-mono-numbers tracking-tight xl:text-[2rem] ${m.color}`}>
+                <h3 className={`text-base font-bold font-mono-numbers tracking-tight sm:text-lg xl:text-xl ${m.color}`}>
                   {m.value}
                 </h3>
-                <p className="mt-1.5 max-w-xs text-sm leading-5 text-zinc-400">
+                <p className="mt-0.5 text-[11px] leading-4 text-zinc-600">
                   {m.description}
                 </p>
               </div>
@@ -182,3 +195,4 @@ export default function KPICards({ challenges }: KPICardsProps) {
     </div>
   );
 }
+

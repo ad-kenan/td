@@ -28,6 +28,16 @@ export interface Challenge {
   updated_at?: string;
 }
 
+export interface Payout {
+  id: string;
+  trader_id: string;
+  amount: number;
+  payout_date: string; // YYYY-MM-DD
+  notes: string | null;
+  created_at?: string;
+}
+
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL_PROD;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY_PROD;
 
@@ -47,6 +57,7 @@ const LOCAL_DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
 interface LocalDB {
   traders: Trader[];
   challenges: Challenge[];
+  payouts: Payout[];
 }
 
 function initLocalDB(): LocalDB {
@@ -55,16 +66,20 @@ function initLocalDB(): LocalDB {
     fs.mkdirSync(dir, { recursive: true });
   }
   if (!fs.existsSync(LOCAL_DB_PATH)) {
-    const defaultDB: LocalDB = { traders: [], challenges: [] };
+    const defaultDB: LocalDB = { traders: [], challenges: [], payouts: [] };
     fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(defaultDB, null, 2), 'utf-8');
     return defaultDB;
   }
   try {
     const raw = fs.readFileSync(LOCAL_DB_PATH, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed.payouts) {
+      parsed.payouts = [];
+    }
+    return parsed;
   } catch (e) {
     console.error('Error reading local DB, resetting:', e);
-    const defaultDB: LocalDB = { traders: [], challenges: [] };
+    const defaultDB: LocalDB = { traders: [], challenges: [], payouts: [] };
     fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(defaultDB, null, 2), 'utf-8');
     return defaultDB;
   }
@@ -182,6 +197,8 @@ export async function deleteTrader(id: string): Promise<void> {
   db.traders = db.traders.filter((t) => t.id !== id);
   // Cascade delete challenges
   db.challenges = db.challenges.filter((c) => c.trader_id !== id);
+  // Cascade delete payouts
+  db.payouts = db.payouts.filter((p) => p.trader_id !== id);
   saveLocalDB(db);
 }
 
@@ -288,3 +305,109 @@ export async function deleteChallenge(id: string): Promise<void> {
   db.challenges = db.challenges.filter((c) => c.id !== id);
   saveLocalDB(db);
 }
+
+// ----------------------------------------------------
+// DATABASE API ACTIONS (PAYOUTS / RETRAITS PERSO)
+// ----------------------------------------------------
+
+export async function getPayouts(traderId?: string): Promise<Payout[]> {
+  if (isSupabaseEnabled && supabase) {
+    let query = supabase.from('payouts').select('*');
+    if (traderId) {
+      query = query.eq('trader_id', traderId);
+    }
+    const { data, error } = await query.order('payout_date', { ascending: false });
+    if (error) {
+      console.error('Supabase getPayouts error:', error.message);
+    } else if (data) {
+      return data;
+    }
+  }
+
+  // Local JSON fallback
+  const db = initLocalDB();
+  let list = db.payouts || [];
+  if (traderId) {
+    list = list.filter((p) => p.trader_id === traderId);
+  }
+  return list.sort((a, b) => new Date(b.payout_date).getTime() - new Date(a.payout_date).getTime());
+}
+
+export async function createPayout(payout: Omit<Payout, 'id'>): Promise<Payout> {
+  const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+  const cleanPayout = {
+    ...payout,
+    id: newId,
+    created_at: new Date().toISOString(),
+  };
+
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('payouts')
+      .insert([cleanPayout])
+      .select()
+      .single();
+    if (error) {
+      console.error('Supabase createPayout error:', error.message);
+      throw new Error(error.message);
+    }
+    return data;
+  }
+
+  // Local JSON fallback
+  const db = initLocalDB();
+  if (!db.payouts) db.payouts = [];
+  db.payouts.push(cleanPayout);
+  saveLocalDB(db);
+  return cleanPayout;
+}
+
+export async function updatePayout(id: string, payout: Partial<Omit<Payout, 'id' | 'trader_id'>>): Promise<Payout> {
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('payouts')
+      .update(payout)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      console.error('Supabase updatePayout error:', error.message);
+      throw new Error(error.message);
+    }
+    return data;
+  }
+
+  // Local JSON fallback
+  const db = initLocalDB();
+  if (!db.payouts) db.payouts = [];
+  const index = db.payouts.findIndex((p) => p.id === id);
+  if (index === -1) throw new Error('Payout not found');
+
+  db.payouts[index] = {
+    ...db.payouts[index],
+    ...payout,
+  };
+  saveLocalDB(db);
+  return db.payouts[index];
+}
+
+export async function deletePayout(id: string): Promise<void> {
+  if (isSupabaseEnabled && supabase) {
+    const { error } = await supabase
+      .from('payouts')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error('Supabase deletePayout error:', error.message);
+      throw new Error(error.message);
+    }
+    return;
+  }
+
+  // Local JSON fallback
+  const db = initLocalDB();
+  if (!db.payouts) db.payouts = [];
+  db.payouts = db.payouts.filter((p) => p.id !== id);
+  saveLocalDB(db);
+}
+

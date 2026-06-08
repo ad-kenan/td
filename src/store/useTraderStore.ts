@@ -1,13 +1,15 @@
 import { create } from 'zustand';
-import { Trader, Challenge } from '@/lib/db';
+import { Trader, Challenge, Payout } from '@/lib/db';
 
 interface TraderStore {
   traders: Trader[];
   challenges: Challenge[];
+  payouts: Payout[];
   selectedTraderId: string; // 'all' or specific trader ID
   
   setTraders: (traders: Trader[]) => void;
   setChallenges: (challenges: Challenge[]) => void;
+  setPayouts: (payouts: Payout[]) => void;
   setSelectedTraderId: (id: string) => void;
   
   // Optimistic updates helper
@@ -16,15 +18,20 @@ interface TraderStore {
   addChallenge: (challenge: Challenge) => void;
   updateChallengeInStore: (challenge: Challenge) => void;
   removeChallenge: (id: string) => void;
+  addPayout: (payout: Payout) => void;
+  updatePayoutInStore: (payout: Payout) => void;
+  removePayout: (id: string) => void;
 }
 
 export const useTraderStore = create<TraderStore>((set) => ({
   traders: [],
   challenges: [],
+  payouts: [],
   selectedTraderId: 'all',
   
   setTraders: (traders) => set({ traders }),
   setChallenges: (challenges) => set({ challenges }),
+  setPayouts: (payouts) => set({ payouts }),
   setSelectedTraderId: (id) => set({ selectedTraderId: id }),
   
   addTrader: (trader) => set((state) => ({
@@ -38,6 +45,7 @@ export const useTraderStore = create<TraderStore>((set) => ({
     return {
       traders: updatedTraders,
       challenges: state.challenges.filter((c) => c.trader_id !== id),
+      payouts: state.payouts.filter((p) => p.trader_id !== id),
       selectedTraderId: newSelectedId,
     };
   }),
@@ -53,4 +61,17 @@ export const useTraderStore = create<TraderStore>((set) => ({
   removeChallenge: (id) => set((state) => ({
     challenges: state.challenges.filter((c) => c.id !== id),
   })),
+
+  addPayout: (payout) => set((state) => ({
+    payouts: [payout, ...state.payouts].sort((a, b) => new Date(b.payout_date).getTime() - new Date(a.payout_date).getTime()),
+  })),
+  
+  updatePayoutInStore: (payout) => set((state) => ({
+    payouts: state.payouts.map((p) => (p.id === payout.id ? payout : p)),
+  })),
+  
+  removePayout: (id) => set((state) => ({
+    payouts: state.payouts.filter((p) => p.id !== id),
+  })),
 }));
+

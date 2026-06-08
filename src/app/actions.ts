@@ -44,3 +44,25 @@ export async function deleteChallengeAction(id: string) {
   await db.deleteChallenge(id);
   revalidatePath('/');
 }
+
+export async function getPayoutsAction(traderId?: string) {
+  return await db.getPayouts(traderId);
+}
+
+export async function createPayoutAction(payout: Omit<db.Payout, 'id'>) {
+  const newPayout = await db.createPayout(payout);
+  revalidatePath('/');
+  return newPayout;
+}
+
+export async function updatePayoutAction(id: string, payout: Partial<Omit<db.Payout, 'id' | 'trader_id'>>) {
+  const updated = await db.updatePayout(id, payout);
+  revalidatePath('/');
+  return updated;
+}
+
+export async function deletePayoutAction(id: string) {
+  await db.deletePayout(id);
+  revalidatePath('/');
+}
+

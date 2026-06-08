@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Trader, Challenge } from '@/lib/db';
+import { Trader, Challenge, Payout } from '@/lib/db';
 import { useTraderStore } from '@/store/useTraderStore';
 import DashboardHeader from './DashboardHeader';
 import KPICards from './KPICards';
 import AnalyticsCharts from './AnalyticsCharts';
 import ChallengesGrid from './ChallengesGrid';
 import ChallengeModal from './ChallengeModal';
+import PayoutsGrid from './PayoutsGrid';
+import PayoutModal from './PayoutModal';
 import {
   createTraderAction,
   updateTraderAction,
@@ -15,45 +17,67 @@ import {
   createChallengeAction,
   updateChallengeAction,
   deleteChallengeAction,
+  createPayoutAction,
+  updatePayoutAction,
+  deletePayoutAction,
 } from '@/app/actions';
 
 interface DashboardViewProps {
   initialTraders: Trader[];
   initialChallenges: Challenge[];
+  initialPayouts: Payout[];
 }
 
 export default function DashboardView({
   initialTraders,
   initialChallenges,
+  initialPayouts,
 }: DashboardViewProps) {
   const {
     traders,
     challenges,
+    payouts,
     selectedTraderId,
     setTraders,
     setChallenges,
+    setPayouts,
     setSelectedTraderId,
     addTrader,
     removeTrader,
     addChallenge,
     updateChallengeInStore,
     removeChallenge,
+    addPayout,
+    updatePayoutInStore,
+    removePayout,
   } = useTraderStore();
 
+  const [activeTab, setActiveTab] = useState<'challenges' | 'payouts'>('challenges');
+  
   const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null);
   const canAddChallenge = selectedTraderId !== 'all';
+
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
+  const canAddPayout = selectedTraderId !== 'all';
 
   // Initialize store with server data
   useEffect(() => {
     setTraders(initialTraders);
     setChallenges(initialChallenges);
-  }, [initialTraders, initialChallenges, setTraders, setChallenges]);
+    setPayouts(initialPayouts);
+  }, [initialTraders, initialChallenges, initialPayouts, setTraders, setChallenges, setPayouts]);
 
   // Filter challenges based on selection
   const filteredChallenges = selectedTraderId === 'all'
     ? challenges
     : challenges.filter((c) => c.trader_id === selectedTraderId);
+
+  // Filter payouts based on selection
+  const filteredPayouts = selectedTraderId === 'all'
+    ? payouts
+    : payouts.filter((p) => p.trader_id === selectedTraderId);
 
   // ----------------------------------------------------
   // ID (TRADER) HANDLERS
@@ -108,6 +132,41 @@ export default function DashboardView({
     }
   };
 
+  // ----------------------------------------------------
+  // PAYOUT HANDLERS
+  // ----------------------------------------------------
+  const handleSavePayout = async (payoutData: any) => {
+    if (editingPayout) {
+      const updated = await updatePayoutAction(editingPayout.id, payoutData);
+      updatePayoutInStore(updated);
+    } else {
+      const created = await createPayoutAction(payoutData);
+      addPayout(created);
+    }
+  };
+
+  const handleTriggerEditPayout = (payout: Payout) => {
+    setEditingPayout(payout);
+    setIsPayoutModalOpen(true);
+  };
+
+  const handleTriggerAddPayout = () => {
+    if (!canAddPayout) {
+      alert('Sélectionnez un profil avant de créer un retrait.');
+      return;
+    }
+
+    setEditingPayout(null);
+    setIsPayoutModalOpen(true);
+  };
+
+  const handleDeletePayout = async (id: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer définitivement ce retrait ?')) {
+      await deletePayoutAction(id);
+      removePayout(id);
+    }
+  };
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#030303] px-3 py-4 text-zinc-100 premium-glow-bg sm:px-5 sm:py-5 lg:px-6 lg:py-6 xl:px-8">
       <div className="saas-grid" />
@@ -122,17 +181,62 @@ export default function DashboardView({
           onDeleteTrader={handleDeleteTrader}
         />
 
-        <KPICards challenges={filteredChallenges} />
+        <KPICards challenges={filteredChallenges} payouts={filteredPayouts} />
 
         <AnalyticsCharts challenges={filteredChallenges} />
 
-        <ChallengesGrid
-          challenges={filteredChallenges}
-          onEditChallenge={handleTriggerEditChallenge}
-          onDeleteChallenge={handleDeleteChallenge}
-          onAddChallenge={handleTriggerAddChallenge}
-          canAddChallenge={canAddChallenge}
-        />
+        {/* Tabs Bar */}
+        <div className="flex items-center gap-1 self-start rounded-[16px] border border-zinc-800/70 bg-zinc-950/60 p-1 backdrop-blur-md">
+          <button
+            onClick={() => setActiveTab('challenges')}
+            className={`relative flex items-center gap-2 rounded-[12px] px-4 py-2 text-sm font-semibold tracking-tight transition-all duration-200 ${
+              activeTab === 'challenges'
+                ? 'bg-zinc-800 text-zinc-100 shadow-md shadow-black/30'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Challenges
+            <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums transition-colors ${
+              activeTab === 'challenges' ? 'bg-zinc-700 text-zinc-300' : 'bg-zinc-900 text-zinc-600'
+            }`}>
+              {filteredChallenges.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('payouts')}
+            className={`relative flex items-center gap-2 rounded-[12px] px-4 py-2 text-sm font-semibold tracking-tight transition-all duration-200 ${
+              activeTab === 'payouts'
+                ? 'bg-zinc-800 text-zinc-100 shadow-md shadow-black/30'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Retraits
+            <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums transition-colors ${
+              activeTab === 'payouts' ? 'bg-amber-900/60 text-amber-300' : 'bg-zinc-900 text-zinc-600'
+            }`}>
+              {filteredPayouts.length}
+            </span>
+          </button>
+        </div>
+
+
+        {activeTab === 'challenges' ? (
+          <ChallengesGrid
+            challenges={filteredChallenges}
+            onEditChallenge={handleTriggerEditChallenge}
+            onDeleteChallenge={handleDeleteChallenge}
+            onAddChallenge={handleTriggerAddChallenge}
+            canAddChallenge={canAddChallenge}
+          />
+        ) : (
+          <PayoutsGrid
+            payouts={filteredPayouts}
+            onEditPayout={handleTriggerEditPayout}
+            onDeletePayout={handleDeletePayout}
+            onAddPayout={handleTriggerAddPayout}
+            canAddPayout={canAddPayout}
+          />
+        )}
 
         {isChallengeModalOpen && (
           <ChallengeModal
@@ -141,6 +245,16 @@ export default function DashboardView({
             onSave={handleSaveChallenge}
             traderId={selectedTraderId}
             challenge={editingChallenge}
+          />
+        )}
+
+        {isPayoutModalOpen && (
+          <PayoutModal
+            isOpen={isPayoutModalOpen}
+            onClose={() => setIsPayoutModalOpen(false)}
+            onSave={handleSavePayout}
+            traderId={selectedTraderId}
+            payout={editingPayout}
           />
         )}
       </div>

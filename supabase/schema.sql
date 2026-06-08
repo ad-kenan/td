@@ -41,3 +41,23 @@ CREATE POLICY "Allow public read-write for challenges" ON public.challenges
 -- Create helpful indices
 CREATE INDEX IF NOT EXISTS idx_challenges_trader_id ON public.challenges(trader_id);
 CREATE INDEX IF NOT EXISTS idx_challenges_purchase_date ON public.challenges(purchase_date DESC);
+
+-- 3. Create payouts table (retraits de bénéfices personnels)
+CREATE TABLE IF NOT EXISTS public.payouts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    trader_id UUID NOT NULL REFERENCES public.traders(id) ON DELETE CASCADE,
+    amount NUMERIC NOT NULL,
+    payout_date DATE NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS for payouts
+ALTER TABLE public.payouts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read-write for payouts" ON public.payouts 
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- Create helpful indices for payouts
+CREATE INDEX IF NOT EXISTS idx_payouts_trader_id ON public.payouts(trader_id);
+CREATE INDEX IF NOT EXISTS idx_payouts_payout_date ON public.payouts(payout_date DESC);
+

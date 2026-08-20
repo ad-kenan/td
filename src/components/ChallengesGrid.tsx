@@ -215,7 +215,7 @@ export default function ChallengesGrid({
 
         {!canAddChallenge && (
           <p className="text-sm leading-6 text-zinc-500">
-            Sélectionne un profil précis pour créer un challenge et l'associer correctement.
+            Sélectionne un profil précis pour créer un challenge et l&apos;associer correctement.
           </p>
         )}
       </div>

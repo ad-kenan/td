@@ -7,7 +7,7 @@ import { X, Save, AlertCircle } from 'lucide-react';
 interface ChallengeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (challengeData: any) => Promise<void>;
+  onSave: (challengeData: Omit<Challenge, 'id'>) => Promise<void>;
   traderId: string;
   challenge?: Challenge | null;
 }
@@ -37,6 +37,7 @@ export default function ChallengeModal({
 
   useEffect(() => {
     if (challenge) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAccountName(challenge.account_name || '');
       setPurchaseDate(challenge.purchase_date || '');
       setCost(challenge.cost ? String(Math.abs(challenge.cost)) : '');
@@ -125,8 +126,9 @@ export default function ChallengeModal({
 
       await onSave(challengeData);
       onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Une erreur est survenue lors de la sauvegarde.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Une erreur est survenue lors de la sauvegarde.';
+      setErrorMsg(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -196,7 +198,7 @@ export default function ChallengeModal({
                     </div>
 
                     <div>
-                      <label className={labelClass}>Date d'achat</label>
+                      <label className={labelClass}>Date d&apos;achat</label>
                       <input
                         type="date"
                         required
@@ -222,7 +224,7 @@ export default function ChallengeModal({
 
                 <section className={sectionClass}>
                   <div className="mb-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">2. Phases d'évaluation</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">2. Phases d&apos;évaluation</p>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

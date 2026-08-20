@@ -100,7 +100,7 @@ export default function DashboardView({
   // ----------------------------------------------------
   // CHALLENGE HANDLERS
   // ----------------------------------------------------
-  const handleSaveChallenge = async (challengeData: any) => {
+  const handleSaveChallenge = async (challengeData: Omit<Challenge, 'id'>) => {
     if (editingChallenge) {
       const updated = await updateChallengeAction(editingChallenge.id, challengeData);
       updateChallengeInStore(updated);
@@ -135,7 +135,7 @@ export default function DashboardView({
   // ----------------------------------------------------
   // PAYOUT HANDLERS
   // ----------------------------------------------------
-  const handleSavePayout = async (payoutData: any) => {
+  const handleSavePayout = async (payoutData: Omit<Payout, 'id'>) => {
     if (editingPayout) {
       const updated = await updatePayoutAction(editingPayout.id, payoutData);
       updatePayoutInStore(updated);

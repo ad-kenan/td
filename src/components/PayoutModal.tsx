@@ -7,7 +7,7 @@ import { X, Save, AlertCircle } from 'lucide-react';
 interface PayoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (payoutData: any) => Promise<void>;
+  onSave: (payoutData: Omit<Payout, 'id'>) => Promise<void>;
   traderId: string;
   payout?: Payout | null;
 }
@@ -28,6 +28,7 @@ export default function PayoutModal({
 
   useEffect(() => {
     if (payout) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAmount(payout.amount ? String(payout.amount) : '');
       setPayoutDate(payout.payout_date || '');
       setNotes(payout.notes || '');
@@ -80,8 +81,9 @@ export default function PayoutModal({
 
       await onSave(payoutData);
       onClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Une erreur est survenue lors de la sauvegarde.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Une erreur est survenue lors de la sauvegarde.';
+      setErrorMsg(message);
     } finally {
       setIsSubmitting(false);
     }

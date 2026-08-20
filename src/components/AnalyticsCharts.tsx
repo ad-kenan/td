@@ -50,14 +50,16 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
 
   // 2. Generate running equity curve
   const equityCurveData = useMemo(() => {
+    const data: Array<(typeof sortedData)[number] & { equity: number }> = [];
     let runningSum = 0;
-    return sortedData.map((d) => {
+    for (const d of sortedData) {
       runningSum += d.pnl;
-      return {
+      data.push({
         ...d,
         equity: runningSum,
-      };
-    });
+      });
+    }
+    return data;
   }, [sortedData]);
 
   // 3. Format Currency
@@ -101,9 +103,9 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
           <div className="mb-4 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 p-3 text-zinc-500 transition-colors duration-300 group-hover:text-zinc-300">
             <LineChart className="h-6 w-6 stroke-[1.5]" />
           </div>
-          <h4 className="text-sm font-semibold text-zinc-100">Courbe d'équité cumulative</h4>
+          <h4 className="text-sm font-semibold text-zinc-100">Courbe d&apos;équité cumulative</h4>
           <p className="mt-2 max-w-[260px] text-sm leading-6 text-zinc-500">
-            Saisissez vos challenges pour voir l'évolution en temps réel de votre performance globale sous forme de graphique.
+            Saisissez vos challenges pour voir l&apos;évolution en temps réel de votre performance globale sous forme de graphique.
           </p>
         </div>
 
@@ -114,7 +116,7 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
           </div>
           <h4 className="text-sm font-semibold text-zinc-100">Analyse par compte</h4>
           <p className="mt-2 max-w-[260px] text-sm leading-6 text-zinc-500">
-            La répartition individuelle de vos gains et pertes par compte de challenge s'affichera ici.
+            La répartition individuelle de vos gains et pertes par compte de challenge s&apos;affichera ici.
           </p>
         </div>
       </div>
@@ -126,7 +128,7 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
       <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Courbe d'équité cumulative</h4>
+            <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Courbe d&apos;équité cumulative</h4>
             <p className="mt-1 text-sm leading-6 text-zinc-500">Évolution chronologique de votre PnL net cumulé.</p>
           </div>
 
@@ -173,7 +175,7 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
                   fontFamily: 'Plus Jakarta Sans, sans-serif',
                   boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.7)',
                 }}
-                formatter={(value: any) => [formatVal(Number(value || 0)), 'Équité']}
+                formatter={(value: unknown) => [formatVal(Number(value || 0)), 'Équité']}
                 labelFormatter={(label) => `Date d'achat: ${formatDateLabel(String(label))}`}
               />
               <Area
@@ -233,7 +235,7 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
                   fontFamily: 'Plus Jakarta Sans, sans-serif',
                   boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.7)',
                 }}
-                formatter={(value: any) => [formatVal(Number(value || 0)), 'PnL Net']}
+                formatter={(value: unknown) => [formatVal(Number(value || 0)), 'PnL Net']}
                 labelFormatter={(label, items) => {
                   const item = items[0]?.payload;
                   return item ? `Compte: ${item.fullName}` : `Compte: ${label}`;

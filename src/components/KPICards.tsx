@@ -74,6 +74,15 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
 
   const adjustedBenefices = totalBenefices + specialChallengesTotalLoss - totalPayouts;
 
+  // Active dates count for daily average calculation
+  const activeDates = new Set([
+    ...challenges.map((c) => c.purchase_date).filter(Boolean),
+    ...payouts.map((p) => p.payout_date).filter(Boolean),
+  ]).size;
+
+  const avgBeneficePerDay = activeDates > 0 ? totalBenefices / activeDates : 0;
+  const avgAdjustedPerDay = activeDates > 0 ? adjustedBenefices / activeDates : 0;
+
   // Format currency helper
   const formatCurrency = (val: number) => {
     const formatted = new Intl.NumberFormat('en-US', {
@@ -98,7 +107,7 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
     {
       title: 'Bénéfices',
       value: formatCurrency(totalBenefices),
-      description: 'Comptes en positif',
+      description: activeDates > 0 ? `Moy. ${formatCurrency(avgBeneficePerDay)}/j` : 'Comptes en positif',
       icon: TrendingUp,
       color: 'text-emerald-400',
       bgGlow: 'from-emerald-500/10 to-transparent',
@@ -108,7 +117,7 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
     {
       title: 'Bénéf. ajustés',
       value: formatCurrency(adjustedBenefices),
-      description: 'Après pertes partielles et retraits',
+      description: activeDates > 0 ? `Moy. ${formatCurrency(avgAdjustedPerDay)}/j` : 'Après retraits et pertes',
       icon: Coins,
       color: 'text-teal-400',
       bgGlow: 'from-teal-500/10 to-transparent',

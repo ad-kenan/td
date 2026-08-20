@@ -10,6 +10,7 @@ import ChallengesGrid from './ChallengesGrid';
 import ChallengeModal from './ChallengeModal';
 import PayoutsGrid from './PayoutsGrid';
 import PayoutModal from './PayoutModal';
+import DailyProfitView from './DailyProfitView';
 import {
   createTraderAction,
   updateTraderAction,
@@ -52,7 +53,7 @@ export default function DashboardView({
     removePayout,
   } = useTraderStore();
 
-  const [activeTab, setActiveTab] = useState<'challenges' | 'payouts'>('challenges');
+  const [activeTab, setActiveTab] = useState<'challenges' | 'payouts' | 'daily'>('challenges');
   
   const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null);
@@ -217,10 +218,24 @@ export default function DashboardView({
               {filteredPayouts.length}
             </span>
           </button>
+          <button
+            onClick={() => setActiveTab('daily')}
+            className={`relative flex items-center gap-2 rounded-[12px] px-4 py-2 text-sm font-semibold tracking-tight transition-all duration-200 ${
+              activeTab === 'daily'
+                ? 'bg-zinc-800 text-zinc-100 shadow-md shadow-black/30'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Journalier
+            <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums transition-colors ${
+              activeTab === 'daily' ? 'bg-emerald-900/60 text-emerald-300' : 'bg-zinc-900 text-zinc-600'
+            }`}>
+              /jour
+            </span>
+          </button>
         </div>
 
-
-        {activeTab === 'challenges' ? (
+        {activeTab === 'challenges' && (
           <ChallengesGrid
             challenges={filteredChallenges}
             onEditChallenge={handleTriggerEditChallenge}
@@ -228,13 +243,24 @@ export default function DashboardView({
             onAddChallenge={handleTriggerAddChallenge}
             canAddChallenge={canAddChallenge}
           />
-        ) : (
+        )}
+
+        {activeTab === 'payouts' && (
           <PayoutsGrid
             payouts={filteredPayouts}
             onEditPayout={handleTriggerEditPayout}
             onDeletePayout={handleDeletePayout}
             onAddPayout={handleTriggerAddPayout}
             canAddPayout={canAddPayout}
+          />
+        )}
+
+        {activeTab === 'daily' && (
+          <DailyProfitView
+            challenges={filteredChallenges}
+            payouts={filteredPayouts}
+            traders={traders}
+            selectedTraderId={selectedTraderId}
           />
         )}
 

@@ -66,3 +66,44 @@ export async function deletePayoutAction(id: string) {
   revalidatePath('/');
 }
 
+export async function getTripDataAction() {
+  return await db.getTripData();
+}
+
+export async function createTripParticipantAction(name: string, isMe = false) {
+  const participant = await db.createTripParticipant(name, isMe);
+  revalidatePath('/voyage');
+  return participant;
+}
+
+export async function setTripParticipantAsMeAction(id: string) {
+  await db.setTripParticipantAsMe(id);
+  revalidatePath('/voyage');
+}
+
+export async function deleteTripParticipantAction(id: string) {
+  await db.deleteTripParticipant(id);
+  revalidatePath('/voyage');
+}
+
+export async function createTripExpenseAction(input: db.CreateTripExpenseInput) {
+  const result = await db.createTripExpense(input);
+  revalidatePath('/voyage');
+  return result;
+}
+
+export async function deleteTripExpenseAction(id: string) {
+  await db.deleteTripExpense(id);
+  revalidatePath('/voyage');
+}
+
+export async function createTripCreditAction(input: db.CreateTripCreditInput) {
+  const credit = await db.createTripCredit(input);
+  revalidatePath('/voyage');
+  return credit;
+}
+
+export async function deleteTripCreditAction(id: string) {
+  await db.deleteTripCredit(id);
+  revalidatePath('/voyage');
+}

@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Trader } from '@/lib/db';
-import { UserPlus, Edit2, Trash2, Globe, Users, X } from 'lucide-react';
+import { UserPlus, Edit2, Trash2, Globe, Users, X, Plane } from 'lucide-react';
 
 interface DashboardHeaderProps {
   traders: Trader[];
@@ -30,6 +31,10 @@ export default function DashboardHeader({
   const activeTrader = traders.find((t) => t.id === selectedTraderId);
   const activeLabel = activeTrader ? activeTrader.name : 'Vue globale';
 
+  const getErrorMessage = (error: unknown) => {
+    return error instanceof Error ? error.message : 'Une erreur est survenue';
+  };
+
   const closeOverlay = () => {
     setIsAdding(false);
     setIsEditing(false);
@@ -45,8 +50,8 @@ export default function DashboardHeader({
     try {
       await onAddTrader(nameInput.trim());
       closeOverlay();
-    } catch (err: any) {
-      alert(err.message || 'Une erreur est survenue');
+    } catch (err) {
+      alert(getErrorMessage(err));
     }
   };
 
@@ -56,8 +61,8 @@ export default function DashboardHeader({
     try {
       await onEditTrader(selectedTraderId, nameInput.trim());
       closeOverlay();
-    } catch (err: any) {
-      alert(err.message || 'Une erreur est survenue');
+    } catch (err) {
+      alert(getErrorMessage(err));
     }
   };
 
@@ -67,8 +72,8 @@ export default function DashboardHeader({
     if (confirm(confirmMsg)) {
       try {
         await onDeleteTrader(selectedTraderId);
-      } catch (err: any) {
-        alert(err.message || 'Une erreur est survenue');
+      } catch (err) {
+        alert(getErrorMessage(err));
       }
     }
   };
@@ -140,6 +145,15 @@ export default function DashboardHeader({
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap md:justify-end">
+              <Link
+                href="/voyage"
+                className="inline-flex h-11 min-w-[150px] items-center justify-center gap-2 rounded-2xl border border-emerald-900/50 bg-emerald-950/20 px-4 text-sm font-semibold text-emerald-300 transition hover:border-emerald-700/70 hover:bg-emerald-950/35 hover:text-emerald-200"
+                title="Ouvrir le calculateur de voyage"
+              >
+                <Plane className="h-4 w-4" />
+                Voyage
+              </Link>
+
               <button
                 onClick={() => {
                   setNameInput('');

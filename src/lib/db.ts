@@ -37,6 +37,62 @@ export interface Payout {
   created_at?: string;
 }
 
+export interface TripParticipant {
+  id: string;
+  name: string;
+  is_me: boolean;
+  created_at?: string;
+}
+
+export interface TripExpense {
+  id: string;
+  description: string;
+  amount: number;
+  expense_date: string; // YYYY-MM-DD
+  paid_by_participant_id: string;
+  notes: string | null;
+  created_at?: string;
+}
+
+export interface TripExpenseSplit {
+  expense_id: string;
+  participant_id: string;
+}
+
+export interface TripCredit {
+  id: string;
+  participant_id: string;
+  amount: number;
+  credit_date: string; // YYYY-MM-DD
+  source_label: string;
+  notes: string | null;
+  created_at?: string;
+}
+
+export interface TripData {
+  participants: TripParticipant[];
+  expenses: TripExpense[];
+  splits: TripExpenseSplit[];
+  credits: TripCredit[];
+}
+
+export interface CreateTripExpenseInput {
+  description: string;
+  amount: number;
+  expense_date: string;
+  paid_by_participant_id: string;
+  split_participant_ids: string[];
+  notes: string | null;
+}
+
+export interface CreateTripCreditInput {
+  participant_id: string;
+  amount: number;
+  credit_date: string;
+  source_label: string;
+  notes: string | null;
+}
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL_PROD;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY_PROD;
@@ -58,7 +114,21 @@ interface LocalDB {
   traders: Trader[];
   challenges: Challenge[];
   payouts: Payout[];
+  trip_participants: TripParticipant[];
+  trip_expenses: TripExpense[];
+  trip_expense_splits: TripExpenseSplit[];
+  trip_credits: TripCredit[];
 }
+
+const createEmptyLocalDB = (): LocalDB => ({
+  traders: [],
+  challenges: [],
+  payouts: [],
+  trip_participants: [],
+  trip_expenses: [],
+  trip_expense_splits: [],
+  trip_credits: [],
+});
 
 function initLocalDB(): LocalDB {
   const dir = path.dirname(LOCAL_DB_PATH);
@@ -66,7 +136,7 @@ function initLocalDB(): LocalDB {
     fs.mkdirSync(dir, { recursive: true });
   }
   if (!fs.existsSync(LOCAL_DB_PATH)) {
-    const defaultDB: LocalDB = { traders: [], challenges: [], payouts: [] };
+    const defaultDB = createEmptyLocalDB();
     fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(defaultDB, null, 2), 'utf-8');
     return defaultDB;
   }
@@ -76,10 +146,22 @@ function initLocalDB(): LocalDB {
     if (!parsed.payouts) {
       parsed.payouts = [];
     }
+    if (!parsed.trip_participants) {
+      parsed.trip_participants = [];
+    }
+    if (!parsed.trip_expenses) {
+      parsed.trip_expenses = [];
+    }
+    if (!parsed.trip_expense_splits) {
+      parsed.trip_expense_splits = [];
+    }
+    if (!parsed.trip_credits) {
+      parsed.trip_credits = [];
+    }
     return parsed;
   } catch (e) {
     console.error('Error reading local DB, resetting:', e);
-    const defaultDB: LocalDB = { traders: [], challenges: [], payouts: [] };
+    const defaultDB = createEmptyLocalDB();
     fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(defaultDB, null, 2), 'utf-8');
     return defaultDB;
   }
@@ -411,3 +493,308 @@ export async function deletePayout(id: string): Promise<void> {
   saveLocalDB(db);
 }
 
+// ----------------------------------------------------
+// DATABASE API ACTIONS (TRIP EXPENSE CALCULATOR)
+// ----------------------------------------------------
+
+function createId() {
+  return typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(36).substring(2, 15);
+}
+
+export async function getTripData(): Promise<TripData> {
+  const [participants, expenses, splits, credits] = await Promise.all([
+    getTripParticipants(),
+    getTripExpenses(),
+    getTripExpenseSplits(),
+    getTripCredits(),
+  ]);
+
+  return { participants, expenses, splits, credits };
+}
+
+export async function getTripParticipants(): Promise<TripParticipant[]> {
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('trip_participants')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) {
+      console.error('Supabase getTripParticipants error:', error.message);
+    } else if (data) {
+      return data;
+    }
+  }
+
+  const db = initLocalDB();
+  return db.trip_participants;
+}
+
+export async function createTripParticipant(name: string, isMe = false): Promise<TripParticipant> {
+  const cleanName = name.trim();
+  if (!cleanName) throw new Error('Name cannot be empty');
+
+  const participant: TripParticipant = {
+    id: createId(),
+    name: cleanName,
+    is_me: isMe,
+    created_at: new Date().toISOString(),
+  };
+
+  if (isSupabaseEnabled && supabase) {
+    if (isMe) {
+      await supabase.from('trip_participants').update({ is_me: false }).eq('is_me', true);
+    }
+
+    const { data, error } = await supabase
+      .from('trip_participants')
+      .insert([participant])
+      .select()
+      .single();
+    if (error) {
+      console.error('Supabase createTripParticipant error:', error.message);
+      throw new Error(error.message);
+    }
+    return data;
+  }
+
+  const db = initLocalDB();
+  if (db.trip_participants.some((p) => p.name.toLowerCase() === cleanName.toLowerCase())) {
+    throw new Error('A participant with this name already exists');
+  }
+  if (isMe) {
+    db.trip_participants = db.trip_participants.map((p) => ({ ...p, is_me: false }));
+  }
+  db.trip_participants.push(participant);
+  saveLocalDB(db);
+  return participant;
+}
+
+export async function setTripParticipantAsMe(id: string): Promise<void> {
+  if (isSupabaseEnabled && supabase) {
+    const { error: resetError } = await supabase
+      .from('trip_participants')
+      .update({ is_me: false })
+      .eq('is_me', true);
+    if (resetError) {
+      console.error('Supabase resetTripParticipantAsMe error:', resetError.message);
+      throw new Error(resetError.message);
+    }
+
+    const { error } = await supabase
+      .from('trip_participants')
+      .update({ is_me: true })
+      .eq('id', id);
+    if (error) {
+      console.error('Supabase setTripParticipantAsMe error:', error.message);
+      throw new Error(error.message);
+    }
+    return;
+  }
+
+  const db = initLocalDB();
+  db.trip_participants = db.trip_participants.map((p) => ({ ...p, is_me: p.id === id }));
+  saveLocalDB(db);
+}
+
+export async function deleteTripParticipant(id: string): Promise<void> {
+  if (isSupabaseEnabled && supabase) {
+    const { error } = await supabase
+      .from('trip_participants')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error('Supabase deleteTripParticipant error:', error.message);
+      throw new Error(error.message);
+    }
+    return;
+  }
+
+  const db = initLocalDB();
+  const removedExpenseIds = db.trip_expenses
+    .filter((expense) => expense.paid_by_participant_id === id)
+    .map((expense) => expense.id);
+  db.trip_participants = db.trip_participants.filter((p) => p.id !== id);
+  db.trip_expenses = db.trip_expenses.filter((expense) => expense.paid_by_participant_id !== id);
+  db.trip_expense_splits = db.trip_expense_splits.filter(
+    (split) => split.participant_id !== id && !removedExpenseIds.includes(split.expense_id)
+  );
+  db.trip_credits = db.trip_credits.filter((credit) => credit.participant_id !== id);
+  saveLocalDB(db);
+}
+
+export async function getTripExpenses(): Promise<TripExpense[]> {
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('trip_expenses')
+      .select('*')
+      .order('expense_date', { ascending: false });
+    if (error) {
+      console.error('Supabase getTripExpenses error:', error.message);
+    } else if (data) {
+      return data;
+    }
+  }
+
+  const db = initLocalDB();
+  return db.trip_expenses.sort((a, b) => new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime());
+}
+
+export async function getTripExpenseSplits(): Promise<TripExpenseSplit[]> {
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('trip_expense_splits')
+      .select('*');
+    if (error) {
+      console.error('Supabase getTripExpenseSplits error:', error.message);
+    } else if (data) {
+      return data;
+    }
+  }
+
+  const db = initLocalDB();
+  return db.trip_expense_splits;
+}
+
+export async function createTripExpense(input: CreateTripExpenseInput): Promise<{ expense: TripExpense; splits: TripExpenseSplit[] }> {
+  const description = input.description.trim();
+  if (!description) throw new Error('Description cannot be empty');
+  if (!input.paid_by_participant_id) throw new Error('Select who paid');
+  if (!input.expense_date) throw new Error('Expense date is required');
+  if (!Number.isFinite(input.amount) || input.amount <= 0) throw new Error('Amount must be greater than 0');
+  if (input.split_participant_ids.length === 0) throw new Error('Select at least one participant for the split');
+
+  const expense: TripExpense = {
+    id: createId(),
+    description,
+    amount: input.amount,
+    expense_date: input.expense_date,
+    paid_by_participant_id: input.paid_by_participant_id,
+    notes: input.notes?.trim() || null,
+    created_at: new Date().toISOString(),
+  };
+
+  const splitRows = Array.from(new Set(input.split_participant_ids)).map((participantId) => ({
+    expense_id: expense.id,
+    participant_id: participantId,
+  }));
+
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('trip_expenses')
+      .insert([expense])
+      .select()
+      .single();
+    if (error) {
+      console.error('Supabase createTripExpense error:', error.message);
+      throw new Error(error.message);
+    }
+
+    const { data: splits, error: splitError } = await supabase
+      .from('trip_expense_splits')
+      .insert(splitRows)
+      .select();
+    if (splitError) {
+      await supabase.from('trip_expenses').delete().eq('id', expense.id);
+      console.error('Supabase createTripExpenseSplits error:', splitError.message);
+      throw new Error(splitError.message);
+    }
+
+    return { expense: data, splits: splits || [] };
+  }
+
+  const db = initLocalDB();
+  db.trip_expenses.push(expense);
+  db.trip_expense_splits.push(...splitRows);
+  saveLocalDB(db);
+  return { expense, splits: splitRows };
+}
+
+export async function deleteTripExpense(id: string): Promise<void> {
+  if (isSupabaseEnabled && supabase) {
+    const { error } = await supabase
+      .from('trip_expenses')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error('Supabase deleteTripExpense error:', error.message);
+      throw new Error(error.message);
+    }
+    return;
+  }
+
+  const db = initLocalDB();
+  db.trip_expenses = db.trip_expenses.filter((expense) => expense.id !== id);
+  db.trip_expense_splits = db.trip_expense_splits.filter((split) => split.expense_id !== id);
+  saveLocalDB(db);
+}
+
+export async function getTripCredits(): Promise<TripCredit[]> {
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('trip_credits')
+      .select('*')
+      .order('credit_date', { ascending: false });
+    if (error) {
+      console.error('Supabase getTripCredits error:', error.message);
+    } else if (data) {
+      return data;
+    }
+  }
+
+  const db = initLocalDB();
+  return db.trip_credits.sort((a, b) => new Date(b.credit_date).getTime() - new Date(a.credit_date).getTime());
+}
+
+export async function createTripCredit(input: CreateTripCreditInput): Promise<TripCredit> {
+  if (!input.participant_id) throw new Error('Select a participant');
+  if (!input.credit_date) throw new Error('Credit date is required');
+  if (!Number.isFinite(input.amount) || input.amount <= 0) throw new Error('Amount must be greater than 0');
+
+  const credit: TripCredit = {
+    id: createId(),
+    participant_id: input.participant_id,
+    amount: input.amount,
+    credit_date: input.credit_date,
+    source_label: input.source_label.trim() || '50% bénéfice ajusté',
+    notes: input.notes?.trim() || null,
+    created_at: new Date().toISOString(),
+  };
+
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('trip_credits')
+      .insert([credit])
+      .select()
+      .single();
+    if (error) {
+      console.error('Supabase createTripCredit error:', error.message);
+      throw new Error(error.message);
+    }
+    return data;
+  }
+
+  const db = initLocalDB();
+  db.trip_credits.push(credit);
+  saveLocalDB(db);
+  return credit;
+}
+
+export async function deleteTripCredit(id: string): Promise<void> {
+  if (isSupabaseEnabled && supabase) {
+    const { error } = await supabase
+      .from('trip_credits')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      console.error('Supabase deleteTripCredit error:', error.message);
+      throw new Error(error.message);
+    }
+    return;
+  }
+
+  const db = initLocalDB();
+  db.trip_credits = db.trip_credits.filter((credit) => credit.id !== id);
+  saveLocalDB(db);
+}

@@ -12,7 +12,7 @@ import {
   CartesianGrid,
   Cell,
 } from 'recharts';
-import { Calendar, TrendingUp, Trophy, Coins, User } from 'lucide-react';
+import { Calendar, TrendingUp, Trophy, Coins, User, Filter } from 'lucide-react';
 
 interface DailyProfitViewProps {
   challenges: Challenge[];
@@ -32,6 +32,31 @@ interface DailyRecord {
   challengeCount: number;
   payoutCount: number;
   traderNames: string[];
+  isZeroDay?: boolean;
+}
+
+// Helper: Get all weekday dates (Monday to Friday, excluding Saturday and Sunday) between start and end date
+function getWeekdayDatesRange(startDateStr: string, endDateStr: string): string[] {
+  const dates: string[] = [];
+  const [startY, startM, startD] = startDateStr.split('-').map(Number);
+  const [endY, endM, endD] = endDateStr.split('-').map(Number);
+
+  if (!startY || !startM || !startD || !endY || !endM || !endD) return [];
+
+  const curr = new Date(Date.UTC(startY, startM - 1, startD));
+  const end = new Date(Date.UTC(endY, endM - 1, endD));
+
+  while (curr <= end) {
+    const dayOfWeek = curr.getUTCDay(); // 0 = Sunday, 6 = Saturday
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      const y = curr.getUTCFullYear();
+      const m = String(curr.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(curr.getUTCDate()).padStart(2, '0');
+      dates.push(`${y}-${m}-${d}`);
+    }
+    curr.setUTCDate(curr.getUTCDate() + 1);
+  }
+  return dates;
 }
 
 export default function DailyProfitView({
@@ -41,6 +66,7 @@ export default function DailyProfitView({
   selectedTraderId,
 }: DailyProfitViewProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterMode, setFilterMode] = useState<'all_weekdays' | 'active_only'>('all_weekdays');
 
   // Trader ID to Name map
   const traderMap = useMemo(() => {
@@ -64,8 +90,8 @@ export default function DailyProfitView({
     );
   };
 
-  // Group by date
-  const dailyRecords = useMemo(() => {
+  // Group by date including Monday-Friday weekdays
+  const { allRecords, activeOnlyRecords, weekdayCount } = useMemo(() => {
     const map = new Map<
       string,
       {
@@ -94,11 +120,14 @@ export default function DailyProfitView({
       return map.get(date)!;
     };
 
+    const recordedDates: string[] = [];
+
     // Process Challenges
     challenges.forEach((c) => {
       const date = c.purchase_date;
       if (!date) return;
 
+      recordedDates.push(date);
       const total = getChallengeTotal(c);
       const entry = getOrCreate(date);
 
@@ -131,17 +160,33 @@ export default function DailyProfitView({
       const date = p.payout_date;
       if (!date) return;
 
+      recordedDates.push(date);
       const entry = getOrCreate(date);
       entry.payoutAmount += p.amount || 0;
       entry.payoutCount += 1;
       entry.traderIds.add(p.trader_id);
     });
 
+    // Find date range
+    let weekdaysRange: string[] = [];
+    if (recordedDates.length > 0) {
+      const sortedDates = [...recordedDates].sort();
+      const minDate = sortedDates[0];
+      const maxDate = sortedDates[sortedDates.length - 1];
+      weekdaysRange = getWeekdayDatesRange(minDate, maxDate);
+    }
+
+    // Populate $0 entries for all weekdays where no data was logged
+    weekdaysRange.forEach((wDate) => {
+      getOrCreate(wDate);
+    });
+
     // Convert map to sorted array (descending date)
-    const list: DailyRecord[] = Array.from(map.entries()).map(([date, d]) => {
+    const listAll: DailyRecord[] = Array.from(map.entries()).map(([date, d]) => {
       const beneficeBrut = d.positiveProfit;
       const beneficeAjuste = d.positiveProfit + d.specialLoss - d.payoutAmount;
       const traderNames = Array.from(d.traderIds).map((id) => traderMap.get(id) || 'Profil');
+      const isZeroDay = d.challengeCount === 0 && d.payoutCount === 0;
 
       return {
         date,
@@ -154,22 +199,34 @@ export default function DailyProfitView({
         challengeCount: d.challengeCount,
         payoutCount: d.payoutCount,
         traderNames,
+        isZeroDay,
       };
     });
 
-    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sortedAll = listAll.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const activeOnly = sortedAll.filter((r) => !r.isZeroDay);
+
+    return {
+      allRecords: sortedAll,
+      activeOnlyRecords: activeOnly,
+      weekdayCount: weekdaysRange.length || activeOnly.length,
+    };
   }, [challenges, payouts, traderMap]);
+
+  // Current display list based on filter
+  const currentRecords = filterMode === 'all_weekdays' ? allRecords : activeOnlyRecords;
 
   // Overall Statistics
   const stats = useMemo(() => {
-    const totalActiveDays = dailyRecords.length;
-    const totalProfitBrut = dailyRecords.reduce((sum, r) => sum + r.beneficeBrut, 0);
-    const totalProfitAjuste = dailyRecords.reduce((sum, r) => sum + r.beneficeAjuste, 0);
+    const totalProfitBrut = allRecords.reduce((sum, r) => sum + r.beneficeBrut, 0);
+    const totalProfitAjuste = allRecords.reduce((sum, r) => sum + r.beneficeAjuste, 0);
 
-    const avgProfitBrutPerDay = totalActiveDays > 0 ? totalProfitBrut / totalActiveDays : 0;
-    const avgProfitAjustePerDay = totalActiveDays > 0 ? totalProfitAjuste / totalActiveDays : 0;
+    const totalDaysToDivide = weekdayCount > 0 ? weekdayCount : activeOnlyRecords.length;
 
-    const bestDayRecord = dailyRecords.reduce<DailyRecord | null>((best, current) => {
+    const avgProfitBrutPerDay = totalDaysToDivide > 0 ? totalProfitBrut / totalDaysToDivide : 0;
+    const avgProfitAjustePerDay = totalDaysToDivide > 0 ? totalProfitAjuste / totalDaysToDivide : 0;
+
+    const bestDayRecord = allRecords.reduce<DailyRecord | null>((best, current) => {
       if (!best || current.beneficeBrut > best.beneficeBrut) {
         return current;
       }
@@ -177,29 +234,30 @@ export default function DailyProfitView({
     }, null);
 
     return {
-      totalActiveDays,
+      totalTradingDays: totalDaysToDivide,
+      activeDaysCount: activeOnlyRecords.length,
       totalProfitBrut,
       totalProfitAjuste,
       avgProfitBrutPerDay,
       avgProfitAjustePerDay,
       bestDayRecord,
     };
-  }, [dailyRecords]);
+  }, [allRecords, activeOnlyRecords, weekdayCount]);
 
   // Filtered list for search
   const filteredRecords = useMemo(() => {
-    if (!searchTerm.trim()) return dailyRecords;
+    if (!searchTerm.trim()) return currentRecords;
     const q = searchTerm.toLowerCase();
-    return dailyRecords.filter(
+    return currentRecords.filter(
       (r) =>
         r.date.includes(q) ||
         r.traderNames.some((name) => name.toLowerCase().includes(q))
     );
-  }, [dailyRecords, searchTerm]);
+  }, [currentRecords, searchTerm]);
 
   // Chart data sorted chronologically
   const chartData = useMemo(() => {
-    return [...dailyRecords]
+    return [...allRecords]
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map((r) => ({
         date: r.date,
@@ -207,7 +265,7 @@ export default function DailyProfitView({
         beneficeAjuste: r.beneficeAjuste,
         netPnL: r.netPnL,
       }));
-  }, [dailyRecords]);
+  }, [allRecords]);
 
   // Currency Formatter
   const formatVal = (val: number) => {
@@ -225,6 +283,7 @@ export default function DailyProfitView({
     const date = new Date(year, (month || 1) - 1, day || 1);
 
     return new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'short',
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -246,20 +305,20 @@ export default function DailyProfitView({
     <div className="space-y-5">
       {/* Top 4 Daily KPI Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1: Moyenne / Jour (Brut) */}
+        {/* Card 1: Moyenne / Jour Ouvré (Brut) */}
         <div className="glass-card group relative overflow-hidden rounded-[20px] border border-emerald-800/50 p-4 transition-all duration-300 hover:border-emerald-500/30">
           <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br from-emerald-500/10 to-transparent opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125" />
           <div className="relative flex items-start justify-between">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
-                Moyenne / Jour (Brut)
+                Moyenne / Jour Ouvré (Brut)
               </span>
               <h3 className="mt-1 font-mono-numbers text-xl font-bold tracking-tight text-emerald-400 sm:text-2xl">
                 {formatVal(stats.avgProfitBrutPerDay)}
                 <span className="ml-1 text-xs font-semibold text-emerald-500/80">/j</span>
               </h3>
               <p className="mt-1 text-[11px] text-zinc-500">
-                Total brut : {formatVal(stats.totalProfitBrut)}
+                Sur {stats.totalTradingDays} jours ouvrés (Lun-Ven)
               </p>
             </div>
             <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-900/40 bg-emerald-950/30 text-emerald-400">
@@ -268,13 +327,13 @@ export default function DailyProfitView({
           </div>
         </div>
 
-        {/* Card 2: Moyenne / Jour (Ajusté) */}
+        {/* Card 2: Moyenne / Jour Ouvré (Ajusté) */}
         <div className="glass-card group relative overflow-hidden rounded-[20px] border border-teal-800/50 p-4 transition-all duration-300 hover:border-teal-500/30">
           <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br from-teal-500/10 to-transparent opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125" />
           <div className="relative flex items-start justify-between">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
-                Moyenne / Jour (Ajusté)
+                Moyenne / Jour Ouvré (Ajusté)
               </span>
               <h3 className="mt-1 font-mono-numbers text-xl font-bold tracking-tight text-teal-400 sm:text-2xl">
                 {formatVal(stats.avgProfitAjustePerDay)}
@@ -290,19 +349,19 @@ export default function DailyProfitView({
           </div>
         </div>
 
-        {/* Card 3: Jours Actifs */}
+        {/* Card 3: Jours Ouvrés vs Actifs */}
         <div className="glass-card group relative overflow-hidden rounded-[20px] border border-sky-800/50 p-4 transition-all duration-300 hover:border-sky-500/30">
           <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br from-sky-500/10 to-transparent opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125" />
           <div className="relative flex items-start justify-between">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
-                Jours d&apos;activité
+                Total Jours Ouvrés
               </span>
               <h3 className="mt-1 font-mono-numbers text-xl font-bold tracking-tight text-sky-400 sm:text-2xl">
-                {stats.totalActiveDays} <span className="text-xs font-semibold text-sky-500/80">jours</span>
+                {stats.totalTradingDays} <span className="text-xs font-semibold text-sky-500/80">jours (Lun-Ven)</span>
               </h3>
               <p className="mt-1 text-[11px] text-zinc-500">
-                Dates avec challenges ou retraits
+                {stats.activeDaysCount} jours avec activité · Hors week-end
               </p>
             </div>
             <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-900/40 bg-sky-950/30 text-sky-400">
@@ -339,10 +398,10 @@ export default function DailyProfitView({
           <div className="mb-4 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div>
               <h4 className="text-base font-semibold tracking-tight text-zinc-100 sm:text-lg">
-                Évolution des Bénéfices par Jour
+                Évolution des Bénéfices par Jour Ouvré (Lun-Ven)
               </h4>
               <p className="text-xs text-zinc-500">
-                Comparaison entre bénéfice brut et bénéfice ajusté au quotidien.
+                Calculé sur l&apos;ensemble des {stats.totalTradingDays} jours ouvrés (hors week-ends).
               </p>
             </div>
 
@@ -425,25 +484,54 @@ export default function DailyProfitView({
               Historique Journalier
             </h4>
             <p className="text-xs text-zinc-500">
-              Détail des résultats par date ({filteredRecords.length} jour{filteredRecords.length > 1 ? 's' : ''})
+              Détail jour par jour sur l&apos;ensemble des jours ouvrés ({filteredRecords.length} jour{filteredRecords.length > 1 ? 's' : ''})
             </p>
           </div>
 
-          <div className="relative min-w-[220px]">
-            <input
-              type="text"
-              placeholder="Rechercher une date ou un nom..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3.5 py-2 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-800"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1">
+              <button
+                onClick={() => setFilterMode('all_weekdays')}
+                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+                  filterMode === 'all_weekdays'
+                    ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                <span>Tous les jours ouvrés ({allRecords.length})</span>
+              </button>
+              <button
+                onClick={() => setFilterMode('active_only')}
+                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+                  filterMode === 'active_only'
+                    ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                <Filter className="h-3.5 w-3.5" />
+                <span>Actifs uniquement ({activeOnlyRecords.length})</span>
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative min-w-[200px]">
+              <input
+                type="text"
+                placeholder="Rechercher une date ou nom..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-800"
+              />
+            </div>
           </div>
         </div>
 
         {filteredRecords.length === 0 ? (
           <div className="flex min-h-[180px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800/80 p-6 text-center">
             <Calendar className="mb-2 h-6 w-6 text-zinc-600" />
-            <p className="text-sm font-medium text-zinc-400">Aucune donnée journalière disponible</p>
+            <p className="text-sm font-medium text-zinc-400">Aucune donnée disponible</p>
             <p className="mt-1 text-xs text-zinc-600">
               Les résultats s&apos;afficheront dès l&apos;ajout de vos premiers challenges ou retraits.
             </p>
@@ -453,7 +541,7 @@ export default function DailyProfitView({
             <table className="w-full text-left text-xs font-mono-numbers">
               <thead>
                 <tr className="border-b border-zinc-800/70 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500">
-                  <th className="pb-3 pl-2">Date</th>
+                  <th className="pb-3 pl-2">Date (Lun-Ven)</th>
                   {selectedTraderId === 'all' && <th className="pb-3">Profil(s)</th>}
                   <th className="pb-3">Activité</th>
                   <th className="pb-3 text-right">Bénéfice Brut</th>
@@ -464,7 +552,12 @@ export default function DailyProfitView({
               </thead>
               <tbody className="divide-y divide-zinc-800/40">
                 {filteredRecords.map((rec) => (
-                  <tr key={rec.date} className="transition-colors hover:bg-zinc-900/40">
+                  <tr
+                    key={rec.date}
+                    className={`transition-colors ${
+                      rec.isZeroDay ? 'bg-zinc-950/30 text-zinc-500 opacity-70 hover:opacity-100 hover:bg-zinc-900/30' : 'hover:bg-zinc-900/40'
+                    }`}
+                  >
                     <td className="py-3.5 pl-2 font-semibold text-zinc-200">
                       {formatDateLabel(rec.date)}
                     </td>
@@ -474,16 +567,22 @@ export default function DailyProfitView({
                         <div className="flex items-center gap-1.5">
                           <User className="h-3 w-3 text-zinc-500" />
                           <span className="text-zinc-400 font-sans text-xs">
-                            {rec.traderNames.join(', ')}
+                            {rec.traderNames.length > 0 ? rec.traderNames.join(', ') : '-'}
                           </span>
                         </div>
                       </td>
                     )}
 
                     <td className="py-3.5 text-zinc-500 font-sans text-xs">
-                      {rec.challengeCount > 0 && `${rec.challengeCount} challenge${rec.challengeCount > 1 ? 's' : ''}`}
-                      {rec.challengeCount > 0 && rec.payoutCount > 0 && ' · '}
-                      {rec.payoutCount > 0 && `${rec.payoutCount} retrait${rec.payoutCount > 1 ? 's' : ''}`}
+                      {rec.isZeroDay ? (
+                        <span className="italic text-zinc-600">Aucune activité ($0)</span>
+                      ) : (
+                        <>
+                          {rec.challengeCount > 0 && `${rec.challengeCount} challenge${rec.challengeCount > 1 ? 's' : ''}`}
+                          {rec.challengeCount > 0 && rec.payoutCount > 0 && ' · '}
+                          {rec.payoutCount > 0 && `${rec.payoutCount} retrait${rec.payoutCount > 1 ? 's' : ''}`}
+                        </>
+                      )}
                     </td>
 
                     <td className="py-3.5 text-right font-bold text-emerald-400">
@@ -498,20 +597,28 @@ export default function DailyProfitView({
 
                     <td
                       className={`py-3.5 text-right font-bold ${
-                        rec.beneficeAjuste >= 0 ? 'text-teal-400' : 'text-rose-400'
+                        rec.beneficeAjuste > 0
+                          ? 'text-teal-400'
+                          : rec.beneficeAjuste < 0
+                          ? 'text-rose-400'
+                          : 'text-zinc-500'
                       }`}
                     >
-                      {rec.beneficeAjuste >= 0
+                      {rec.beneficeAjuste > 0
                         ? `+${formatVal(rec.beneficeAjuste)}`
                         : formatVal(rec.beneficeAjuste)}
                     </td>
 
                     <td
                       className={`py-3.5 pr-2 text-right font-semibold ${
-                        rec.netPnL >= 0 ? 'text-zinc-300' : 'text-rose-400/90'
+                        rec.netPnL > 0
+                          ? 'text-zinc-300'
+                          : rec.netPnL < 0
+                          ? 'text-rose-400/90'
+                          : 'text-zinc-600'
                       }`}
                     >
-                      {rec.netPnL >= 0 ? `+${formatVal(rec.netPnL)}` : formatVal(rec.netPnL)}
+                      {rec.netPnL > 0 ? `+${formatVal(rec.netPnL)}` : formatVal(rec.netPnL)}
                     </td>
                   </tr>
                 ))}

@@ -74,14 +74,34 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
 
   const adjustedBenefices = totalBenefices + specialChallengesTotalLoss - totalPayouts;
 
-  // Active dates count for daily average calculation
-  const activeDates = new Set([
+  // Calculate total weekdays (Monday to Friday, excluding weekends) in the dataset range
+  const recordedDates = [
     ...challenges.map((c) => c.purchase_date).filter(Boolean),
     ...payouts.map((p) => p.payout_date).filter(Boolean),
-  ]).size;
+  ];
 
-  const avgBeneficePerDay = activeDates > 0 ? totalBenefices / activeDates : 0;
-  const avgAdjustedPerDay = activeDates > 0 ? adjustedBenefices / activeDates : 0;
+  let weekdayCount = 0;
+  if (recordedDates.length > 0) {
+    const sorted = [...recordedDates].sort();
+    const [minY, minM, minD] = sorted[0].split('-').map(Number);
+    const [maxY, maxM, maxD] = sorted[sorted.length - 1].split('-').map(Number);
+
+    if (minY && minM && minD && maxY && maxM && maxD) {
+      const curr = new Date(Date.UTC(minY, minM - 1, minD));
+      const end = new Date(Date.UTC(maxY, maxM - 1, maxD));
+
+      while (curr <= end) {
+        const dayOfWeek = curr.getUTCDay(); // 0 = Sun, 6 = Sat
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+          weekdayCount++;
+        }
+        curr.setUTCDate(curr.getUTCDate() + 1);
+      }
+    }
+  }
+
+  const avgBeneficePerDay = weekdayCount > 0 ? totalBenefices / weekdayCount : 0;
+  const avgAdjustedPerDay = weekdayCount > 0 ? adjustedBenefices / weekdayCount : 0;
 
   // Format currency helper
   const formatCurrency = (val: number) => {
@@ -107,7 +127,7 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
     {
       title: 'Bénéfices',
       value: formatCurrency(totalBenefices),
-      description: activeDates > 0 ? `Moy. ${formatCurrency(avgBeneficePerDay)}/j` : 'Comptes en positif',
+      description: weekdayCount > 0 ? `Moy. ${formatCurrency(avgBeneficePerDay)}/j (Lun-Ven)` : 'Comptes en positif',
       icon: TrendingUp,
       color: 'text-emerald-400',
       bgGlow: 'from-emerald-500/10 to-transparent',
@@ -117,7 +137,7 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
     {
       title: 'Bénéf. ajustés',
       value: formatCurrency(adjustedBenefices),
-      description: activeDates > 0 ? `Moy. ${formatCurrency(avgAdjustedPerDay)}/j` : 'Après retraits et pertes',
+      description: weekdayCount > 0 ? `Moy. ${formatCurrency(avgAdjustedPerDay)}/j (Lun-Ven)` : 'Après retraits et pertes',
       icon: Coins,
       color: 'text-teal-400',
       bgGlow: 'from-teal-500/10 to-transparent',

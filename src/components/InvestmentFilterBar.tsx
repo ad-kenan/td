@@ -13,6 +13,8 @@ import {
   UserCheck,
   CheckCircle2,
   Filter,
+  TrendingDown,
+  ReceiptText,
 } from 'lucide-react';
 
 interface InvestmentFilterBarProps {
@@ -51,6 +53,26 @@ export default function InvestmentFilterBar({
   // Determine current year for presets
   const currentYear = new Date().getFullYear();
 
+  // Helper to extract daily negative amounts (accumulated daily debt/losses) for a challenge
+  const getDailyLosses = (c: Challenge): number => {
+    const dailyPhases = [
+      c.phase2_day1,
+      c.phase3_day2,
+      c.phase4_funded_day1,
+      c.phase5_funded_day2,
+      c.phase6_funded_day3,
+      c.phase7_funded_day4,
+      c.phase8_funded_day5,
+    ];
+
+    return dailyPhases.reduce<number>((sum: number, phaseVal) => {
+      if (typeof phaseVal === 'number' && phaseVal < 0) {
+        return sum + Math.abs(phaseVal);
+      }
+      return sum;
+    }, 0);
+  };
+
   // Filter challenges based on the selected identity and the date range
   const targetedChallenges = useMemo(() => {
     return challenges.filter((c) => {
@@ -70,13 +92,22 @@ export default function InvestmentFilterBar({
     });
   }, [challenges, selectedTraderId, startDate, endDate]);
 
-  // Total gross investment = sum of absolute costs of all purchased challenges in the period
-  const totalInvestmentDebt = useMemo(() => {
+  // Calculations:
+  // 1. Pure challenge purchase price (prix pur du challenge)
+  const totalChallengePrice = useMemo(() => {
     return targetedChallenges.reduce((sum, c) => sum + Math.abs(c.cost || 0), 0);
   }, [targetedChallenges]);
 
+  // 2. Accumulated daily debt (dettes accumulées à chaque jour négatif, sans bénéfice)
+  const totalDailyLosses = useMemo(() => {
+    return targetedChallenges.reduce((sum, c) => sum + getDailyLosses(c), 0);
+  }, [targetedChallenges]);
+
+  // 3. Total Investment & Debt = Challenge Price + Daily Accumulated Debt
+  const totalInvestmentWithDailyDebt = totalChallengePrice + totalDailyLosses;
+
   const countChallenges = targetedChallenges.length;
-  const avgCostPerChallenge = countChallenges > 0 ? totalInvestmentDebt / countChallenges : 0;
+  const avgCostPerChallenge = countChallenges > 0 ? totalInvestmentWithDailyDebt / countChallenges : 0;
 
   // Format currency
   const formatCurrency = (val: number) => {
@@ -146,7 +177,7 @@ export default function InvestmentFilterBar({
   return (
     <div className="glass-panel relative overflow-hidden rounded-[24px] border border-amber-500/20 bg-gradient-to-br from-amber-950/20 via-zinc-950/80 to-zinc-950 p-4 shadow-xl sm:p-5 lg:p-6 animate-fade-in">
       <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 rounded-full bg-amber-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute left-0 bottom-0 h-36 w-36 rounded-full bg-emerald-500/5 blur-2xl" />
+      <div className="pointer-events-none absolute left-0 bottom-0 h-36 w-36 rounded-full bg-rose-500/5 blur-2xl" />
 
       <div className="relative z-10 flex flex-col gap-5">
         {/* Header & Controls */}
@@ -158,15 +189,15 @@ export default function InvestmentFilterBar({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold tracking-tight text-zinc-100 sm:text-lg">
-                  Calculateur d'Investissement & Dette
+                  Calculateur d'Investissement & Dette Cumulée
                 </h2>
                 <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/50 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
                   <Sparkles className="h-2.5 w-2.5" />
-                  Sans bénéfice
+                  Prix Challenge + Dettes/Pertes Jour
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-zinc-400">
-                Calculez le montant total déboursé (coût d'achat des challenges) à partir d'une date pour une identité.
+                Calcule le montant investi incluant le <strong>prix d'achat du challenge</strong> + les <strong>dettes/pertes accumulées chaque jour</strong>, sans inclure les bénéfices.
               </p>
             </div>
           </div>
@@ -293,50 +324,60 @@ export default function InvestmentFilterBar({
           </div>
         </div>
 
-        {/* Results Banner Cards */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {/* 1. Total Investment */}
-          <div className="rounded-2xl border border-amber-500/30 bg-zinc-950/80 p-4 shadow-inner">
-            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-amber-400/90">
-              <span>Investissement Déboursé (Dette)</span>
+        {/* Results Banner Cards - 4 Columns */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {/* 1. Total Investment & Global Debt */}
+          <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-b from-amber-950/40 to-zinc-950/90 p-4 shadow-lg ring-1 ring-amber-500/20">
+            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-amber-300">
+              <span>Investissement Total & Dette</span>
               <span className="text-xs">💰</span>
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono-numbers tracking-tight text-amber-300 sm:text-3xl">
-                {formatCurrency(totalInvestmentDebt)}
+              <span className="text-2xl font-extrabold font-mono-numbers tracking-tight text-amber-300 sm:text-3xl">
+                {formatCurrency(totalInvestmentWithDailyDebt)}
               </span>
             </div>
             <p className="mt-1 text-[11px] text-zinc-400">
-              {startDate
-                ? `Depuis le ${formatDateDisplay(startDate)}${endDate ? ` jusqu'au ${formatDateDisplay(endDate)}` : ''}`
-                : "Sur l'ensemble de l'historique"}{' '}
-              · <span className="text-zinc-300 font-medium">{activeTraderName}</span>
+              Prix challenges ({formatCurrency(totalChallengePrice)}) + Dettes/Pertes ({formatCurrency(totalDailyLosses)})
             </p>
           </div>
 
-          {/* 2. Total Challenges Count */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4">
+          {/* 2. Pure Challenge Price */}
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
             <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-              <span>Challenges Financés</span>
-              <Layers className="h-4 w-4 text-zinc-400" />
+              <span>Prix des Challenges (Pur)</span>
+              <ReceiptText className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-bold font-mono-numbers tracking-tight text-zinc-100 sm:text-3xl">
-                {countChallenges}
-              </span>
-              <span className="text-xs text-zinc-400">
-                {countChallenges > 1 ? 'comptes achetés' : 'compte acheté'}
+                {formatCurrency(totalChallengePrice)}
               </span>
             </div>
             <p className="mt-1 text-[11px] text-zinc-400">
-              Prix d'achat pur, sans comptabiliser les gains ou pertes
+              {countChallenges} challenge{countChallenges > 1 ? 's' : ''} acheté{countChallenges > 1 ? 's' : ''} sur la période
             </p>
           </div>
 
-          {/* 3. Average per challenge */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-4">
+          {/* 3. Daily Accumulated Losses / Debt */}
+          <div className="rounded-2xl border border-rose-900/40 bg-rose-950/15 p-4">
+            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-rose-300">
+              <span>Dettes / Pertes Journalières</span>
+              <TrendingDown className="h-4 w-4 text-rose-400" />
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-bold font-mono-numbers tracking-tight text-rose-400 sm:text-3xl">
+                {formatCurrency(totalDailyLosses)}
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] text-zinc-400">
+              Somme des pertes de chaque jour (hors gains)
+            </p>
+          </div>
+
+          {/* 4. Average per challenge */}
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
             <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-              <span>Coût Moyen / Challenge</span>
+              <span>Moyenne / Challenge</span>
               <CheckCircle2 className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
@@ -345,7 +386,7 @@ export default function InvestmentFilterBar({
               </span>
             </div>
             <p className="mt-1 text-[11px] text-zinc-400">
-              Moyenne par compte sur la sélection
+              Prix d'achat + dettes jour par compte
             </p>
           </div>
         </div>
@@ -359,43 +400,57 @@ export default function InvestmentFilterBar({
             >
               <span>
                 {showDetails
-                  ? `Masquer la liste des ${countChallenges} challenge(s) inclus`
-                  : `Voir le détail des ${countChallenges} challenge(s) inclus dans cet investissement (${formatCurrency(totalInvestmentDebt)})`}
+                  ? `Masquer le détail des ${countChallenges} challenge(s) inclus`
+                  : `Voir le détail des ${countChallenges} challenge(s) inclus (Total: ${formatCurrency(totalInvestmentWithDailyDebt)})`}
               </span>
               {showDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
 
             {showDetails && (
               <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/90 animate-fade-in">
-                <div className="max-h-60 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="sticky top-0 border-b border-zinc-800 bg-zinc-900/90 text-zinc-400 font-semibold">
                       <tr>
                         <th className="px-3 py-2">Date d'achat</th>
                         <th className="px-3 py-2">Compte</th>
                         <th className="px-3 py-2">Identité</th>
-                        <th className="px-3 py-2 text-right">Prix Déboursé (Dette)</th>
+                        <th className="px-3 py-2 text-right">Prix Challenge</th>
+                        <th className="px-3 py-2 text-right">Dettes/Pertes Jour</th>
+                        <th className="px-3 py-2 text-right text-amber-300">Total Investi (Dette+Prix)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
-                      {targetedChallenges.map((c) => (
-                        <tr key={c.id} className="hover:bg-zinc-900/40 transition">
-                          <td className="px-3 py-2 font-mono text-zinc-400">
-                            {formatDateDisplay(c.purchase_date)}
-                          </td>
-                          <td className="px-3 py-2 font-semibold text-zinc-100">
-                            {c.account_name}
-                          </td>
-                          <td className="px-3 py-2">
-                            <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[11px] text-zinc-300">
-                              {traderMap.get(c.trader_id) || 'Inconnu'}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-right font-mono font-bold text-amber-300">
-                            {formatCurrency(Math.abs(c.cost || 0))}
-                          </td>
-                        </tr>
-                      ))}
+                      {targetedChallenges.map((c) => {
+                        const buyCost = Math.abs(c.cost || 0);
+                        const dailyLoss = getDailyLosses(c);
+                        const rowTotal = buyCost + dailyLoss;
+
+                        return (
+                          <tr key={c.id} className="hover:bg-zinc-900/40 transition">
+                            <td className="px-3 py-2 font-mono text-zinc-400">
+                              {formatDateDisplay(c.purchase_date)}
+                            </td>
+                            <td className="px-3 py-2 font-semibold text-zinc-100">
+                              {c.account_name}
+                            </td>
+                            <td className="px-3 py-2">
+                              <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[11px] text-zinc-300">
+                                {traderMap.get(c.trader_id) || 'Inconnu'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-right font-mono text-zinc-200">
+                              {formatCurrency(buyCost)}
+                            </td>
+                            <td className="px-3 py-2 text-right font-mono text-rose-400">
+                              {dailyLoss > 0 ? formatCurrency(dailyLoss) : '-'}
+                            </td>
+                            <td className="px-3 py-2 text-right font-mono font-bold text-amber-300">
+                              {formatCurrency(rowTotal)}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

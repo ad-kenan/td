@@ -11,6 +11,7 @@ import ChallengeModal from './ChallengeModal';
 import PayoutsGrid from './PayoutsGrid';
 import PayoutModal from './PayoutModal';
 import DailyProfitView from './DailyProfitView';
+import InvestmentFilterBar from './InvestmentFilterBar';
 import {
   createTraderAction,
   updateTraderAction,
@@ -63,6 +64,11 @@ export default function DashboardView({
   const [editingPayout, setEditingPayout] = useState<Payout | null>(null);
   const canAddPayout = selectedTraderId !== 'all';
 
+  // Date and investment filter state
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [applyToAllViews, setApplyToAllViews] = useState(false);
+
   // Initialize store with server data
   useEffect(() => {
     setTraders(initialTraders);
@@ -70,15 +76,25 @@ export default function DashboardView({
     setPayouts(initialPayouts);
   }, [initialTraders, initialChallenges, initialPayouts, setTraders, setChallenges, setPayouts]);
 
-  // Filter challenges based on selection
-  const filteredChallenges = selectedTraderId === 'all'
-    ? challenges
-    : challenges.filter((c) => c.trader_id === selectedTraderId);
+  // Filter challenges based on selection and optional global date filter
+  const filteredChallenges = challenges.filter((c) => {
+    if (selectedTraderId !== 'all' && c.trader_id !== selectedTraderId) return false;
+    if (applyToAllViews) {
+      if (startDate && c.purchase_date < startDate) return false;
+      if (endDate && c.purchase_date > endDate) return false;
+    }
+    return true;
+  });
 
-  // Filter payouts based on selection
-  const filteredPayouts = selectedTraderId === 'all'
-    ? payouts
-    : payouts.filter((p) => p.trader_id === selectedTraderId);
+  // Filter payouts based on selection and optional global date filter
+  const filteredPayouts = payouts.filter((p) => {
+    if (selectedTraderId !== 'all' && p.trader_id !== selectedTraderId) return false;
+    if (applyToAllViews) {
+      if (startDate && p.payout_date < startDate) return false;
+      if (endDate && p.payout_date > endDate) return false;
+    }
+    return true;
+  });
 
   // ----------------------------------------------------
   // ID (TRADER) HANDLERS
@@ -182,7 +198,25 @@ export default function DashboardView({
           onDeleteTrader={handleDeleteTrader}
         />
 
-        <KPICards challenges={filteredChallenges} payouts={filteredPayouts} />
+        <InvestmentFilterBar
+          challenges={challenges}
+          traders={traders}
+          selectedTraderId={selectedTraderId}
+          onSelectTrader={setSelectedTraderId}
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          applyToAllViews={applyToAllViews}
+          onToggleApplyToAllViews={setApplyToAllViews}
+        />
+
+        <KPICards
+          challenges={filteredChallenges}
+          payouts={filteredPayouts}
+          startDate={applyToAllViews ? startDate : undefined}
+          endDate={applyToAllViews ? endDate : undefined}
+        />
 
         <AnalyticsCharts challenges={filteredChallenges} />
 

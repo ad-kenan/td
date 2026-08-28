@@ -4,9 +4,11 @@ import { Challenge, Payout } from '@/lib/db';
 interface KPICardsProps {
   challenges: Challenge[];
   payouts?: Payout[];
+  startDate?: string;
+  endDate?: string;
 }
 
-export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
+export default function KPICards({ challenges, payouts = [], startDate, endDate }: KPICardsProps) {
   // Calculate financial metrics
   // 1. Debt (Dette) = Sum of absolute values of cost (Phase 1)
   const totalDebt = challenges.reduce((sum, c) => sum + Math.abs(c.cost || 0), 0);
@@ -117,7 +119,7 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
     {
       title: 'Dette',
       value: formatCurrency(totalDebt),
-      description: "Prix d'achat des challenges",
+      description: startDate ? `Depuis le ${startDate}` : "Prix d'achat des challenges",
       icon: ShieldAlert,
       color: 'text-zinc-100',
       bgGlow: 'from-zinc-500/10 to-transparent',

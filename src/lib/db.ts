@@ -23,6 +23,7 @@ export interface Challenge {
   phase7_funded_day4: number | null;
   phase8_funded_day5: number | null;
   phase9_payout: number | null;
+  closed_date?: string | null; // YYYY-MM-DD Date de clôture / validation
   notes: string | null;
   created_at?: string;
   updated_at?: string;

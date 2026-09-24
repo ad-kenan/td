@@ -30,6 +30,7 @@ export default function ChallengeModal({
   const [phase7, setPhase7] = useState('');
   const [phase8, setPhase8] = useState('');
   const [phase9, setPhase9] = useState('');
+  const [closedDate, setClosedDate] = useState('');
   const [notes, setNotes] = useState('');
 
   const [errorMsg, setErrorMsg] = useState('');
@@ -49,6 +50,7 @@ export default function ChallengeModal({
       setPhase7(challenge.phase7_funded_day4 !== null ? String(challenge.phase7_funded_day4) : '');
       setPhase8(challenge.phase8_funded_day5 !== null ? String(challenge.phase8_funded_day5) : '');
       setPhase9(challenge.phase9_payout !== null ? String(challenge.phase9_payout) : '');
+      setClosedDate(challenge.closed_date || '');
       setNotes(challenge.notes || '');
     } else {
       setAccountName('');
@@ -62,6 +64,7 @@ export default function ChallengeModal({
       setPhase7('');
       setPhase8('');
       setPhase9('');
+      setClosedDate('');
       setNotes('');
     }
 
@@ -121,6 +124,7 @@ export default function ChallengeModal({
         phase7_funded_day4: toNumOrNull(phase7),
         phase8_funded_day5: toNumOrNull(phase8),
         phase9_payout: toNumOrNull(phase9),
+        closed_date: closedDate.trim() ? closedDate.trim() : null,
         notes: notes.trim() || null,
       };
 
@@ -184,7 +188,7 @@ export default function ChallengeModal({
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">1. Informations de base</p>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                       <label className={labelClass}>Nom du compte</label>
                       <input
@@ -217,6 +221,29 @@ export default function ChallengeModal({
                         value={cost}
                         onChange={(e) => setCost(e.target.value)}
                         className={inputClass}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                          Date de fin (clôture)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setClosedDate(new Date().toISOString().split('T')[0])}
+                          className="text-[10px] text-emerald-400 hover:text-emerald-300 font-medium cursor-pointer"
+                          title="Définir à aujourd'hui"
+                        >
+                          Aujourd&apos;hui
+                        </button>
+                      </div>
+                      <input
+                        type="date"
+                        value={closedDate}
+                        onChange={(e) => setClosedDate(e.target.value)}
+                        className={inputClass}
+                        placeholder="Optionnel"
                       />
                     </div>
                   </div>

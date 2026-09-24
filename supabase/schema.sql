@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.challenges (
     phase7_funded_day4 NUMERIC, -- Gain/Perte Funded Jour 4
     phase8_funded_day5 NUMERIC, -- Gain/Perte Funded Jour 5
     phase9_payout NUMERIC,      -- First Payout Funded
+    closed_date DATE,           -- Date de clôture / validation du challenge (bénéfice)
     notes TEXT,                 -- Colonne 1 / comments
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -41,6 +42,7 @@ CREATE POLICY "Allow public read-write for challenges" ON public.challenges
 -- Create helpful indices
 CREATE INDEX IF NOT EXISTS idx_challenges_trader_id ON public.challenges(trader_id);
 CREATE INDEX IF NOT EXISTS idx_challenges_purchase_date ON public.challenges(purchase_date DESC);
+CREATE INDEX IF NOT EXISTS idx_challenges_closed_date ON public.challenges(closed_date DESC);
 
 -- 3. Create payouts table (retraits de bénéfices personnels)
 CREATE TABLE IF NOT EXISTS public.payouts (

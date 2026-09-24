@@ -239,6 +239,11 @@ export default function ChallengesGrid({
                     <div className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
                         {formatDate(challenge.purchase_date)}
+                        {challenge.closed_date && (
+                          <span className="ml-2 font-medium text-emerald-400">
+                            · Fin: {formatDate(challenge.closed_date)}
+                          </span>
+                        )}
                       </p>
                       <h4 className="mt-1 break-words text-sm font-semibold leading-5 text-zinc-50">
                         {challenge.account_name}
@@ -362,7 +367,14 @@ export default function ChallengesGrid({
                             {challenge.account_name}
                           </div>
                         </td>
-                        <td className="whitespace-nowrap px-3 py-4 font-sans text-zinc-500">{formatDate(challenge.purchase_date)}</td>
+                        <td className="whitespace-nowrap px-3 py-4 font-sans text-zinc-500">
+                          <div>{formatDate(challenge.purchase_date)}</div>
+                          {challenge.closed_date && (
+                            <div className="text-[10px] font-medium text-emerald-400">
+                              Fin: {formatDate(challenge.closed_date)}
+                            </div>
+                          )}
+                        </td>
                         <td className="whitespace-nowrap px-3 py-4 font-semibold text-zinc-300">{formatCellVal(challenge.cost)}</td>
                         <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase2_day1)}`}>
                           {formatCellVal(challenge.phase2_day1)}

@@ -12,6 +12,7 @@ import PayoutsGrid from './PayoutsGrid';
 import PayoutModal from './PayoutModal';
 import DailyProfitView from './DailyProfitView';
 import InvestmentFilterBar from './InvestmentFilterBar';
+import TraderRandomizerWidget from './TraderRandomizerWidget';
 import {
   createTraderAction,
   updateTraderAction,
@@ -196,6 +197,12 @@ export default function DashboardView({
           onAddTrader={handleAddTrader}
           onEditTrader={handleEditTrader}
           onDeleteTrader={handleDeleteTrader}
+        />
+
+        <TraderRandomizerWidget
+          traders={traders}
+          selectedTraderId={selectedTraderId}
+          onSelectTrader={setSelectedTraderId}
         />
 
         <InvestmentFilterBar

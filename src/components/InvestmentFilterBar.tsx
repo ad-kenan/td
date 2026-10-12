@@ -189,7 +189,7 @@ export default function InvestmentFilterBar({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold tracking-tight text-zinc-100 sm:text-lg">
-                  Calculateur d'Investissement & Dette Cumulée
+                  Calculateur d&apos;Investissement &amp; Dette Cumulée
                 </h2>
                 <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/50 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
                   <Sparkles className="h-2.5 w-2.5" />
@@ -197,7 +197,7 @@ export default function InvestmentFilterBar({
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-zinc-400">
-                Calcule le montant investi incluant le <strong>prix d'achat du challenge</strong> + les <strong>dettes/pertes accumulées chaque jour</strong>, sans inclure les bénéfices.
+                Calcule le montant investi incluant le <strong>prix d&apos;achat du challenge</strong> + les <strong>dettes/pertes accumulées chaque jour</strong>, sans inclure les bénéfices.
               </p>
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function InvestmentFilterBar({
 
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                Jusqu'au (Optionnel)
+                Jusqu&apos;au (Optionnel)
               </label>
               <input
                 type="date"

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Challenge } from '@/lib/db';
-import { Edit3, Trash2, Search, ArrowUpDown, Filter, Plus, UserRound } from 'lucide-react';
+import { Edit3, Trash2, Search, ArrowUpDown, Filter, Plus, ShieldAlert } from 'lucide-react';
 
 interface ChallengesGridProps {
   challenges: Challenge[];
@@ -61,7 +61,6 @@ export default function ChallengesGrid({
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
       return;
     }
-
     setSortField(field);
     setSortOrder('desc');
   };
@@ -98,7 +97,7 @@ export default function ChallengesGrid({
   }, [challenges, filterType, search, sortField, sortOrder]);
 
   const formatCellVal = (val: number | null) => {
-    if (val === null || val === undefined) return '—';
+    if (val === null || val === undefined) return '–';
 
     const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -107,12 +106,11 @@ export default function ChallengesGrid({
     }).format(Math.abs(val));
 
     if (val === 0) return formatted;
-
     return val < 0 ? `-${formatted}` : `+${formatted}`;
   };
 
   const formatCompactCurrency = (val: number | null) => {
-    if (val === null || val === undefined) return '—';
+    if (val === null || val === undefined) return '–';
 
     const formatted = new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -121,7 +119,6 @@ export default function ChallengesGrid({
     }).format(Math.abs(val));
 
     if (val === 0) return formatted;
-
     return val < 0 ? `-${formatted}` : `+${formatted}`;
   };
 
@@ -137,94 +134,84 @@ export default function ChallengesGrid({
   };
 
   const getPnLColor = (val: number | null) => {
-    if (val === null || val === undefined) return 'text-zinc-500';
+    if (val === null || val === undefined) return 'text-zinc-600';
     if (val > 0) return 'text-emerald-400 font-semibold';
     if (val < 0) return 'text-rose-400 font-semibold';
-    return 'text-zinc-300';
+    return 'text-zinc-400';
   };
-
-  const getTotalBadgeClasses = (val: number) => {
-    if (val > 0) return 'border-emerald-900/60 bg-emerald-950/20 text-emerald-300';
-    if (val < 0) return 'border-rose-900/60 bg-rose-950/20 text-rose-300';
-    return 'border-zinc-800 bg-zinc-950/70 text-zinc-300';
-  };
-
-  const resultsLabel =
-    search || filterType !== 'all'
-      ? `${processedChallenges.length} résultat${processedChallenges.length > 1 ? 's' : ''} après filtres`
-      : `${processedChallenges.length} challenge${processedChallenges.length > 1 ? 's' : ''} au total`;
 
   const emptyState = (
-    <div className="rounded-[24px] border border-dashed border-zinc-800 bg-zinc-950/20 px-6 py-14 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/60 text-zinc-400">
-        <UserRound className="h-5 w-5" />
+    <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 px-6 py-12 text-center">
+      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-zinc-500">
+        <ShieldAlert className="h-5 w-5" />
       </div>
-      <p className="mt-4 text-base font-medium text-zinc-200">Aucun challenge à afficher</p>
-      <p className="mt-2 text-sm leading-6 text-zinc-500">
+      <p className="mt-3 text-sm font-semibold text-zinc-200">Aucun challenge trouvé</p>
+      <p className="mt-1 text-xs text-zinc-500">
         {search || filterType !== 'all'
-          ? 'Ajuste la recherche ou les filtres pour retrouver tes données.'
-          : 'Commence par sélectionner un profil puis ajoute ton premier challenge.'}
+          ? 'Modifiez votre recherche ou réinitialisez les filtres.'
+          : 'Sélectionnez un profil et commencez par ajouter votre premier challenge.'}
       </p>
     </div>
   );
 
   return (
-    <section className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
-      <div className="mb-6 flex flex-col gap-4">
-        <div className="flex flex-col gap-4">
-          <div>
-            <h3 className="text-lg font-semibold tracking-tight text-zinc-100">Challenges</h3>
-            <p className="mt-1 text-sm text-zinc-500">{resultsLabel}</p>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_200px_230px] md:items-center">
-            <div className="relative min-w-0">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Rechercher un compte..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-11 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 pl-10 pr-4 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-800"
-              />
-            </div>
-
-            <div className="flex h-11 items-center rounded-2xl border border-zinc-800 bg-zinc-950/50 px-3">
-              <Filter className="mr-2 h-4 w-4 shrink-0 text-zinc-500" />
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as FilterType)}
-                className="w-full appearance-none bg-transparent text-sm font-medium text-zinc-300 outline-none"
-              >
-                <option value="all">Tous les PnL</option>
-                <option value="profitable">Bénéficiaires</option>
-                <option value="losing">Déficitaires</option>
-              </select>
-            </div>
-
-            <button
-              onClick={onAddChallenge}
-              disabled={!canAddChallenge}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-zinc-200/10 bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900 disabled:text-zinc-500"
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter un challenge
-            </button>
-          </div>
+    <section className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5">
+      {/* TOOLBAR DU TABLEAU : Recherche + Filtres + Action d'ajout */}
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h3 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+            Challenges &amp; Opérations
+          </h3>
+          <p className="text-[11px] text-zinc-400">
+            {processedChallenges.length} compte{processedChallenges.length > 1 ? 's' : ''} visible{processedChallenges.length > 1 ? 's' : ''}
+          </p>
         </div>
 
-        {!canAddChallenge && (
-          <p className="text-sm leading-6 text-zinc-500">
-            Sélectionne un profil précis pour créer un challenge et l&apos;associer correctement.
-          </p>
-        )}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Recherche */}
+          <div className="relative min-w-[200px] flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Rechercher un compte..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 w-full rounded-xl border border-white/[0.08] bg-black/40 pl-9 pr-3 text-xs text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-violet-500/50"
+            />
+          </div>
+
+          {/* Filtre PnL */}
+          <div className="flex h-9 items-center rounded-xl border border-white/[0.08] bg-black/40 px-2.5">
+            <Filter className="mr-1.5 h-3.5 w-3.5 text-zinc-500" />
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as FilterType)}
+              className="bg-transparent text-xs font-medium text-zinc-300 outline-none cursor-pointer"
+            >
+              <option value="all">Tous les PnL</option>
+              <option value="profitable">Bénéficiaires</option>
+              <option value="losing">Déficitaires</option>
+            </select>
+          </div>
+
+          {/* Bouton Ajouter un Challenge */}
+          <button
+            onClick={onAddChallenge}
+            disabled={!canAddChallenge}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-violet-500 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            <span>Ajouter</span>
+          </button>
+        </div>
       </div>
 
       {processedChallenges.length === 0 ? (
         emptyState
       ) : (
         <>
-          <div className="space-y-3 md:hidden">
+          {/* VUE MOBILE : Cartes condensées */}
+          <div className="space-y-2.5 md:hidden">
             {processedChallenges.map((challenge) => {
               const total = getChallengeTotal(challenge);
               const evaluationTotal = getEvaluationTotal(challenge);
@@ -233,71 +220,68 @@ export default function ChallengesGrid({
               return (
                 <article
                   key={challenge.id}
-                  className="rounded-[24px] border border-zinc-800/70 bg-zinc-950/35 p-4 shadow-lg shadow-black/10"
+                  className="rounded-xl border border-white/[0.06] bg-black/30 p-3.5 shadow-sm"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                      <p className="text-[10px] font-semibold text-zinc-500">
                         {formatDate(challenge.purchase_date)}
                         {challenge.closed_date && (
-                          <span className="ml-2 font-medium text-emerald-400">
-                            · Fin: {formatDate(challenge.closed_date)}
-                          </span>
+                          <span className="ml-1.5 text-emerald-400">· Fin: {formatDate(challenge.closed_date)}</span>
                         )}
                       </p>
-                      <h4 className="mt-1 break-words text-sm font-semibold leading-5 text-zinc-50">
+                      <h4 className="mt-0.5 truncate text-xs font-bold text-zinc-100">
                         {challenge.account_name}
                       </h4>
                     </div>
 
-                    <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${getTotalBadgeClasses(total)}`}>
+                    <span
+                      className={`rounded-lg px-2 py-0.5 font-mono text-xs font-bold ${
+                        total >= 0
+                          ? 'border border-emerald-500/20 bg-emerald-950/40 text-emerald-300'
+                          : 'border border-rose-500/20 bg-rose-950/40 text-rose-300'
+                      }`}
+                    >
                       {formatCellVal(total)}
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950/70 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Coût</p>
-                      <p className="mt-2 text-sm font-semibold text-zinc-100">{formatCompactCurrency(challenge.cost)}</p>
+                  <div className="mt-2.5 grid grid-cols-4 gap-1.5 text-center text-[10px]">
+                    <div className="rounded-lg bg-white/[0.02] p-1.5">
+                      <span className="text-zinc-500">Coût</span>
+                      <p className="font-mono font-semibold text-zinc-300">{formatCompactCurrency(challenge.cost)}</p>
                     </div>
-
-                    <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950/70 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Évaluation</p>
-                      <p className={`mt-2 text-sm ${getPnLColor(evaluationTotal)}`}>{formatCompactCurrency(evaluationTotal)}</p>
+                    <div className="rounded-lg bg-white/[0.02] p-1.5">
+                      <span className="text-zinc-500">Éval</span>
+                      <p className={`font-mono ${getPnLColor(evaluationTotal)}`}>{formatCompactCurrency(evaluationTotal)}</p>
                     </div>
-
-                    <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950/70 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Funded</p>
-                      <p className={`mt-2 text-sm ${getPnLColor(fundedTotal)}`}>{formatCompactCurrency(fundedTotal)}</p>
+                    <div className="rounded-lg bg-white/[0.02] p-1.5">
+                      <span className="text-zinc-500">Funded</span>
+                      <p className={`font-mono ${getPnLColor(fundedTotal)}`}>{formatCompactCurrency(fundedTotal)}</p>
                     </div>
-
-                    <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950/70 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Payout</p>
-                      <p className={`mt-2 text-sm ${getPnLColor(challenge.phase9_payout)}`}>{formatCompactCurrency(challenge.phase9_payout)}</p>
+                    <div className="rounded-lg bg-white/[0.02] p-1.5">
+                      <span className="text-zinc-500">Payout</span>
+                      <p className={`font-mono ${getPnLColor(challenge.phase9_payout)}`}>{formatCompactCurrency(challenge.phase9_payout)}</p>
                     </div>
                   </div>
 
                   {challenge.notes && (
-                    <div className="mt-4 rounded-2xl border border-zinc-800/60 bg-zinc-950/55 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Notes</p>
-                      <p className="mt-2 text-sm leading-6 text-zinc-400">{challenge.notes}</p>
-                    </div>
+                    <p className="mt-2 text-[11px] text-zinc-400 italic">
+                      {challenge.notes}
+                    </p>
                   )}
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-3 flex gap-2">
                     <button
                       onClick={() => onEditChallenge(challenge)}
-                      className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/70 text-sm font-medium text-zinc-200 transition hover:border-zinc-700 hover:text-white"
+                      className="flex-1 rounded-lg border border-white/10 py-1.5 text-xs font-medium text-zinc-300 hover:bg-white/5"
                     >
-                      <Edit3 className="h-4 w-4" />
                       Modifier
                     </button>
-
                     <button
                       onClick={() => onDeleteChallenge(challenge.id)}
-                      className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/70 text-sm font-medium text-zinc-300 transition hover:border-rose-900/70 hover:bg-rose-950/20 hover:text-rose-300"
+                      className="flex-1 rounded-lg border border-rose-900/40 py-1.5 text-xs font-medium text-rose-400 hover:bg-rose-950/20"
                     >
-                      <Trash2 className="h-4 w-4" />
                       Supprimer
                     </button>
                   </div>
@@ -306,123 +290,139 @@ export default function ChallengesGrid({
             })}
           </div>
 
-          <div className="hidden md:block">
-            <div className="overflow-x-auto rounded-[22px] border border-zinc-900/70 bg-zinc-950/15">
-              <table className="w-full min-w-[1380px] table-auto border-collapse text-left">
+          {/* VUE DESKTOP : Tableau Financier Institutionnel */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-white/[0.06] bg-black/20">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1280px] table-auto border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-zinc-900/80 bg-zinc-950/40 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                    <th className="sticky left-0 z-20 w-[320px] min-w-[320px] bg-zinc-950/95 px-5 py-4 shadow-[1px_0_0_0_rgba(39,39,42,0.8)]">
+                  <tr className="border-b border-white/[0.06] bg-[#121318]/90 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                    <th className="sticky left-0 z-20 w-[280px] min-w-[280px] bg-[#121318] px-4 py-3 shadow-[1px_0_0_0_rgba(255,255,255,0.06)]">
                       <button
                         onClick={() => handleSort('account_name')}
-                        className="flex items-center gap-1.5 transition hover:text-zinc-200"
+                        className="flex items-center gap-1 transition hover:text-white"
                       >
-                        Compte <ArrowUpDown className="h-3 w-3 text-zinc-600" />
+                        Compte &amp; Date <ArrowUpDown className="h-3 w-3 text-zinc-500" />
                       </button>
                     </th>
-                    <th className="w-[118px] min-w-[118px] px-3 py-4">
-                      <button
-                        onClick={() => handleSort('purchase_date')}
-                        className="flex items-center gap-1.5 transition hover:text-zinc-200"
-                      >
-                        Date <ArrowUpDown className="h-3 w-3 text-zinc-600" />
-                      </button>
-                    </th>
-                    <th className="w-[104px] min-w-[104px] px-3 py-4">
+                    <th className="w-[100px] px-3 py-3 text-right">
                       <button
                         onClick={() => handleSort('cost')}
-                        className="flex items-center gap-1.5 transition hover:text-zinc-200"
+                        className="ml-auto flex items-center justify-end gap-1 transition hover:text-white"
                       >
-                        Coût <ArrowUpDown className="h-3 w-3 text-zinc-600" />
+                        Coût <ArrowUpDown className="h-3 w-3 text-zinc-500" />
                       </button>
                     </th>
-                    <th className="w-[90px] min-w-[90px] px-2 py-4 text-center">Ph.2 J1</th>
-                    <th className="w-[90px] min-w-[90px] px-2 py-4 text-center">Ph.3 J2</th>
-                    <th className="w-[84px] min-w-[84px] px-2 py-4 text-center">F1</th>
-                    <th className="w-[84px] min-w-[84px] px-2 py-4 text-center">F2</th>
-                    <th className="w-[84px] min-w-[84px] px-2 py-4 text-center">F3</th>
-                    <th className="w-[84px] min-w-[84px] px-2 py-4 text-center">F4</th>
-                    <th className="w-[84px] min-w-[84px] px-2 py-4 text-center">F5</th>
-                    <th className="w-[98px] min-w-[98px] px-2 py-4 text-center">Payout</th>
-                    <th className="w-[116px] min-w-[116px] px-4 py-4 text-right">
+                    <th className="w-[85px] px-2 py-3 text-right">Ph.2 J1</th>
+                    <th className="w-[85px] px-2 py-3 text-right">Ph.3 J2</th>
+                    <th className="w-[75px] px-2 py-3 text-right">F1</th>
+                    <th className="w-[75px] px-2 py-3 text-right">F2</th>
+                    <th className="w-[75px] px-2 py-3 text-right">F3</th>
+                    <th className="w-[75px] px-2 py-3 text-right">F4</th>
+                    <th className="w-[75px] px-2 py-3 text-right">F5</th>
+                    <th className="w-[95px] px-3 py-3 text-right">Payout</th>
+                    <th className="w-[125px] px-3 py-3 text-right">
                       <button
                         onClick={() => handleSort('total')}
-                        className="ml-auto flex items-center justify-end gap-1.5 transition hover:text-zinc-200"
+                        className="ml-auto flex items-center justify-end gap-1 transition hover:text-white"
                       >
-                        Total <ArrowUpDown className="h-3 w-3 text-zinc-600" />
+                        PnL Total <ArrowUpDown className="h-3 w-3 text-zinc-500" />
                       </button>
                     </th>
-                    <th className="w-[180px] min-w-[180px] px-4 py-4">Notes</th>
-                    <th className="w-[100px] min-w-[100px] px-5 py-4 text-right">Actions</th>
+                    <th className="w-[160px] px-3 py-3">Notes</th>
+                    <th className="w-[80px] px-3 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-zinc-900/40 text-[12px] text-zinc-300 font-mono-numbers">
+                <tbody className="divide-y divide-white/[0.04] text-xs font-mono">
                   {processedChallenges.map((challenge) => {
                     const total = getChallengeTotal(challenge);
 
                     return (
-                      <tr key={challenge.id} className="group transition hover:bg-zinc-900/15">
-                        <td className={`sticky left-0 z-10 min-w-[320px] bg-[#0c0c10] px-5 py-4 font-sans shadow-[1px_0_0_0_rgba(39,39,42,0.7)] transition group-hover:bg-zinc-900/90`}>
-                          <div className="max-w-[340px] whitespace-normal break-words text-sm font-semibold leading-5 tracking-tight text-zinc-50">
+                      <tr key={challenge.id} className="group transition hover:bg-white/[0.03]">
+                        {/* Compte & Date d'achat (Sticky Left) */}
+                        <td className="sticky left-0 z-10 min-w-[280px] bg-[#0d0e12] px-4 py-3 font-sans shadow-[1px_0_0_0_rgba(255,255,255,0.06)] group-hover:bg-[#13141a]">
+                          <div className="font-semibold text-zinc-100 truncate max-w-[260px]">
                             {challenge.account_name}
                           </div>
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 font-sans text-zinc-500">
-                          <div>{formatDate(challenge.purchase_date)}</div>
-                          {challenge.closed_date && (
-                            <div className="text-[10px] font-medium text-emerald-400">
-                              Fin: {formatDate(challenge.closed_date)}
-                            </div>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 font-semibold text-zinc-300">{formatCellVal(challenge.cost)}</td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase2_day1)}`}>
-                          {formatCellVal(challenge.phase2_day1)}
-                        </td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase3_day2)}`}>
-                          {formatCellVal(challenge.phase3_day2)}
-                        </td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase4_funded_day1)}`}>
-                          {formatCellVal(challenge.phase4_funded_day1)}
-                        </td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase5_funded_day2)}`}>
-                          {formatCellVal(challenge.phase5_funded_day2)}
-                        </td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase6_funded_day3)}`}>
-                          {formatCellVal(challenge.phase6_funded_day3)}
-                        </td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase7_funded_day4)}`}>
-                          {formatCellVal(challenge.phase7_funded_day4)}
-                        </td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase8_funded_day5)}`}>
-                          {formatCellVal(challenge.phase8_funded_day5)}
-                        </td>
-                        <td className={`whitespace-nowrap px-2 py-4 text-center ${getPnLColor(challenge.phase9_payout)}`}>
-                          {formatCellVal(challenge.phase9_payout)}
-                        </td>
-                        <td className={`whitespace-nowrap px-4 py-4 text-right text-sm font-bold ${getPnLColor(total)}`}>
-                          {formatCellVal(total)}
-                        </td>
-                        <td className="px-4 py-4 font-sans text-zinc-500">
-                          <div className="max-w-[180px] whitespace-normal break-words leading-5" title={challenge.notes || ''}>
-                            {challenge.notes || '—'}
+                          <div className="mt-0.5 text-[10px] text-zinc-500 font-mono">
+                            {formatDate(challenge.purchase_date)}
+                            {challenge.closed_date && (
+                              <span className="ml-1.5 text-emerald-400">· Fin: {formatDate(challenge.closed_date)}</span>
+                            )}
                           </div>
                         </td>
-                        <td className="px-5 py-4 text-right font-sans">
-                          <div className="flex items-center justify-end gap-1.5 opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100">
+
+                        {/* Coût d'achat */}
+                        <td className="whitespace-nowrap px-3 py-3 text-right font-medium text-zinc-400">
+                          {formatCellVal(challenge.cost)}
+                        </td>
+
+                        {/* Évaluation Phase 2 & 3 */}
+                        <td className={`whitespace-nowrap px-2 py-3 text-right ${getPnLColor(challenge.phase2_day1)}`}>
+                          {formatCellVal(challenge.phase2_day1)}
+                        </td>
+                        <td className={`whitespace-nowrap px-2 py-3 text-right ${getPnLColor(challenge.phase3_day2)}`}>
+                          {formatCellVal(challenge.phase3_day2)}
+                        </td>
+
+                        {/* Funded Phases F1 à F5 */}
+                        <td className={`whitespace-nowrap px-2 py-3 text-right ${getPnLColor(challenge.phase4_funded_day1)}`}>
+                          {formatCellVal(challenge.phase4_funded_day1)}
+                        </td>
+                        <td className={`whitespace-nowrap px-2 py-3 text-right ${getPnLColor(challenge.phase5_funded_day2)}`}>
+                          {formatCellVal(challenge.phase5_funded_day2)}
+                        </td>
+                        <td className={`whitespace-nowrap px-2 py-3 text-right ${getPnLColor(challenge.phase6_funded_day3)}`}>
+                          {formatCellVal(challenge.phase6_funded_day3)}
+                        </td>
+                        <td className={`whitespace-nowrap px-2 py-3 text-right ${getPnLColor(challenge.phase7_funded_day4)}`}>
+                          {formatCellVal(challenge.phase7_funded_day4)}
+                        </td>
+                        <td className={`whitespace-nowrap px-2 py-3 text-right ${getPnLColor(challenge.phase8_funded_day5)}`}>
+                          {formatCellVal(challenge.phase8_funded_day5)}
+                        </td>
+
+                        {/* Phase 9 Payout */}
+                        <td className={`whitespace-nowrap px-3 py-3 text-right font-semibold ${getPnLColor(challenge.phase9_payout)}`}>
+                          {formatCellVal(challenge.phase9_payout)}
+                        </td>
+
+                        {/* PnL Total Clé */}
+                        <td className="whitespace-nowrap px-3 py-3 text-right">
+                          <span
+                            className={`inline-block rounded-md px-2 py-0.5 text-xs font-bold ${
+                              total >= 0
+                                ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-500/20'
+                                : 'bg-rose-950/40 text-rose-400 border border-rose-500/20'
+                            }`}
+                          >
+                            {formatCellVal(total)}
+                          </span>
+                        </td>
+
+                        {/* Notes */}
+                        <td className="px-3 py-3 font-sans text-[11px] text-zinc-500">
+                          <div className="max-w-[160px] truncate" title={challenge.notes || ''}>
+                            {challenge.notes || '–'}
+                          </div>
+                        </td>
+
+                        {/* Actions (apparaissent au hover) */}
+                        <td className="px-3 py-3 text-right font-sans">
+                          <div className="flex items-center justify-end gap-1 opacity-0 transition group-hover:opacity-100">
                             <button
                               onClick={() => onEditChallenge(challenge)}
-                              className="rounded-xl p-2 text-zinc-500 transition hover:bg-zinc-900/70 hover:text-zinc-100"
+                              className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
                               title="Modifier"
                             >
-                              <Edit3 className="h-4 w-4" />
+                              <Edit3 className="h-3.5 w-3.5" />
                             </button>
                             <button
                               onClick={() => onDeleteChallenge(challenge.id)}
-                              className="rounded-xl p-2 text-zinc-500 transition hover:bg-zinc-900/70 hover:text-rose-300"
+                              className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-rose-950/40 hover:text-rose-400"
                               title="Supprimer"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         </td>

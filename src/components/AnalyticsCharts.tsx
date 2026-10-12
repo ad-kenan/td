@@ -12,9 +12,10 @@ import {
   Tooltip,
   CartesianGrid,
   Cell,
+  ReferenceLine,
 } from 'recharts';
 import { Challenge } from '@/lib/db';
-import { ArrowUpRight, BarChart3, LineChart } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, BarChart3, LineChart } from 'lucide-react';
 
 interface AnalyticsChartsProps {
   challenges: Challenge[];
@@ -39,7 +40,7 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
 
         return {
           id: c.id,
-          name: c.account_name.split('-').pop() || c.account_name, // keep short name
+          name: c.account_name.split('-').pop() || c.account_name,
           fullName: c.account_name,
           date: c.purchase_date,
           pnl: total,
@@ -97,26 +98,24 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
 
   if (challenges.length === 0) {
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="glass-card group relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-dashed border-zinc-800 p-6 text-center select-none">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_65%)]" />
-          <div className="mb-4 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 p-3 text-zinc-500 transition-colors duration-300 group-hover:text-zinc-300">
-            <LineChart className="h-6 w-6 stroke-[1.5]" />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-white/[0.05] bg-[#0d0e12] p-6 text-center">
+          <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-zinc-500">
+            <LineChart className="h-5 w-5" />
           </div>
-          <h4 className="text-sm font-semibold text-zinc-100">Courbe d&apos;équité cumulative</h4>
-          <p className="mt-2 max-w-[260px] text-sm leading-6 text-zinc-500">
-            Saisissez vos challenges pour voir l&apos;évolution en temps réel de votre performance globale sous forme de graphique.
+          <h4 className="text-sm font-semibold text-zinc-200">Courbe d&apos;équité cumulative</h4>
+          <p className="mt-1 max-w-[260px] text-xs leading-5 text-zinc-500">
+            Enregistrez vos challenges pour visualiser l&apos;évolution de votre capital cumulé.
           </p>
         </div>
 
-        <div className="glass-card group relative flex min-h-[280px] flex-col items-center justify-center overflow-hidden rounded-[28px] border border-dashed border-zinc-800 p-6 text-center select-none">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_65%)]" />
-          <div className="mb-4 rounded-2xl border border-zinc-800/60 bg-zinc-900/40 p-3 text-zinc-500 transition-colors duration-300 group-hover:text-zinc-300">
-            <BarChart3 className="h-6 w-6 stroke-[1.5]" />
+        <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-white/[0.05] bg-[#0d0e12] p-6 text-center">
+          <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-zinc-500">
+            <BarChart3 className="h-5 w-5" />
           </div>
-          <h4 className="text-sm font-semibold text-zinc-100">Analyse par compte</h4>
-          <p className="mt-2 max-w-[260px] text-sm leading-6 text-zinc-500">
-            La répartition individuelle de vos gains et pertes par compte de challenge s&apos;affichera ici.
+          <h4 className="text-sm font-semibold text-zinc-200">Performance par compte</h4>
+          <p className="mt-1 max-w-[260px] text-xs leading-5 text-zinc-500">
+            La distribution de vos gains et pertes par challenge apparaîtra ici.
           </p>
         </div>
       </div>
@@ -124,30 +123,44 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      {/* 1. COURBE D'ÉQUITÉ CUMULATIVE */}
+      <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5 transition hover:border-white/10">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Courbe d&apos;équité cumulative</h4>
-            <p className="mt-1 text-sm leading-6 text-zinc-500">Évolution chronologique de votre PnL net cumulé.</p>
+            <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+              Courbe d&apos;équité cumulative
+            </h4>
+            <p className="text-[11px] text-zinc-400">Évolution chronologique de votre PnL net cumulé.</p>
           </div>
 
-          <div className={`inline-flex items-center gap-2 self-start rounded-full border px-3 py-1.5 text-xs font-semibold ${netPnL >= 0 ? 'border-emerald-900/60 bg-emerald-950/20 text-emerald-300' : 'border-rose-900/60 bg-rose-950/20 text-rose-300'}`}>
-            <ArrowUpRight className="h-3.5 w-3.5" />
-            {formatVal(netPnL)}
+          <div
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono font-bold ${
+              netPnL >= 0
+                ? 'border border-emerald-500/20 bg-emerald-950/40 text-emerald-300'
+                : 'border border-rose-500/20 bg-rose-950/40 text-rose-300'
+            }`}
+          >
+            {netPnL >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+            <span>{netPnL >= 0 ? `+${formatVal(netPnL)}` : formatVal(netPnL)}</span>
           </div>
         </div>
 
-        <div className="h-64 w-full font-mono-numbers lg:h-72">
+        <div className="h-60 w-full font-mono lg:h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={equityCurveData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+            <AreaChart data={equityCurveData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="equityGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ffffff" stopOpacity={0.12} />
-                  <stop offset="95%" stopColor="#ffffff" stopOpacity={0.0} />
+                <linearGradient id="equityGlowGreen" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="equityGlowRed" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#18181b" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2028" vertical={false} />
+              <ReferenceLine y={0} stroke="#3f3f46" strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
                 stroke="#52525b"
@@ -167,47 +180,50 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0c0c0e',
-                  borderColor: '#1c1c24',
+                  backgroundColor: '#121318',
+                  borderColor: '#27272a',
                   borderRadius: '12px',
                   color: '#fafafa',
                   fontSize: '12px',
-                  fontFamily: 'Plus Jakarta Sans, sans-serif',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.7)',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.7)',
                 }}
-                formatter={(value: unknown) => [formatVal(Number(value || 0)), 'Équité']}
-                labelFormatter={(label) => `Date d'achat: ${formatDateLabel(String(label))}`}
+                formatter={(value: unknown) => [formatVal(Number(value || 0)), 'Équité Cumulée']}
+                labelFormatter={(label) => `Date d'achat : ${formatDateLabel(String(label))}`}
               />
               <Area
                 type="monotone"
                 dataKey="equity"
-                stroke="#ffffff"
-                strokeWidth={1.5}
+                stroke={netPnL >= 0 ? '#10b981' : '#f43f5e'}
+                strokeWidth={2}
                 fillOpacity={1}
-                fill="url(#equityGlow)"
+                fill={netPnL >= 0 ? 'url(#equityGlowGreen)' : 'url(#equityGlowRed)'}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      {/* 2. PERFORMANCE PAR COMPTE */}
+      <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5 transition hover:border-white/10">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h4 className="text-lg font-semibold tracking-tight text-zinc-100">Performance par compte</h4>
-            <p className="mt-1 text-sm leading-6 text-zinc-500">Résultat net final individuel par challenge.</p>
+            <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+              Performance par compte
+            </h4>
+            <p className="text-[11px] text-zinc-400">Résultat net final individuel par challenge.</p>
           </div>
 
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-zinc-800 bg-zinc-950/70 px-3 py-1.5 text-xs font-semibold text-zinc-300">
-            <BarChart3 className="h-3.5 w-3.5" />
-            {profitableAccounts}/{sortedData.length} rentables
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-xs font-semibold text-zinc-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span>{profitableAccounts}/{sortedData.length} rentables</span>
           </div>
         </div>
 
-        <div className="h-64 w-full font-mono-numbers lg:h-72">
+        <div className="h-60 w-full font-mono lg:h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={sortedData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#18181b" vertical={false} />
+            <BarChart data={sortedData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2028" vertical={false} />
+              <ReferenceLine y={0} stroke="#3f3f46" strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
                 stroke="#52525b"
@@ -227,27 +243,25 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0c0c0e',
-                  borderColor: '#1c1c24',
+                  backgroundColor: '#121318',
+                  borderColor: '#27272a',
                   borderRadius: '12px',
                   color: '#fafafa',
                   fontSize: '12px',
-                  fontFamily: 'Plus Jakarta Sans, sans-serif',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.7)',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.7)',
                 }}
                 formatter={(value: unknown) => [formatVal(Number(value || 0)), 'PnL Net']}
                 labelFormatter={(label, items) => {
                   const item = items[0]?.payload;
-                  return item ? `Compte: ${item.fullName}` : `Compte: ${label}`;
+                  return item ? `Compte : ${item.fullName}` : `Compte : ${label}`;
                 }}
               />
-              <Bar dataKey="pnl" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
                 {sortedData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.pnl >= 0 ? '#ffffff' : '#27272a'}
-                    stroke={entry.pnl >= 0 ? '#ffffff' : '#2e2e3f'}
-                    strokeWidth={0.75}
+                    fill={entry.pnl >= 0 ? '#10b981' : '#f43f5e'}
+                    fillOpacity={0.85}
                   />
                 ))}
               </Bar>

@@ -94,8 +94,8 @@ export default function PayoutsGrid({
   );
 
   return (
-    <section className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
-      <div className="mb-6 flex flex-col gap-4">
+    <section className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3">
         <div className="flex flex-col gap-4">
           <div>
             <h3 className="text-lg font-semibold tracking-tight text-zinc-100">Retraits de bénéfices personnels</h3>

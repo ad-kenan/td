@@ -21,7 +21,7 @@ import {
   Filter,
   ChevronDown,
   ChevronRight,
-  CheckCircle2,
+  Search,
 } from 'lucide-react';
 
 interface DailyProfitViewProps {
@@ -336,18 +336,17 @@ export default function DailyProfitView({
   };
 
   return (
-    <div className="space-y-5">
-      {/* Top 4 Daily KPI Cards */}
+    <div className="space-y-4 sm:space-y-5">
+      {/* TOP 4 DAILY KPI CARDS */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Moyenne / Jour Ouvré (Brut) */}
-        <div className="glass-card group relative overflow-hidden rounded-[20px] border border-emerald-800/50 p-4 transition-all duration-300 hover:border-emerald-500/30">
-          <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br from-emerald-500/10 to-transparent opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125" />
-          <div className="relative flex items-start justify-between">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+          <div className="flex items-start justify-between">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                 Moyenne / Jour Ouvré (Brut)
               </span>
-              <h3 className="mt-1 font-mono-numbers text-xl font-bold tracking-tight text-emerald-400 sm:text-2xl">
+              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-emerald-400 sm:text-2xl">
                 {formatVal(stats.avgProfitBrutPerDay)}
                 <span className="ml-1 text-xs font-semibold text-emerald-500/80">/j</span>
               </h3>
@@ -355,106 +354,106 @@ export default function DailyProfitView({
                 Sur {stats.totalTradingDays} jours ouvrés (Lun-Ven)
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-emerald-900/40 bg-emerald-950/30 text-emerald-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-950/30 text-emerald-400">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
         </div>
 
         {/* Card 2: Moyenne / Jour Ouvré (Ajusté) */}
-        <div className="glass-card group relative overflow-hidden rounded-[20px] border border-teal-800/50 p-4 transition-all duration-300 hover:border-teal-500/30">
-          <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br from-teal-500/10 to-transparent opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125" />
-          <div className="relative flex items-start justify-between">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+          <div className="flex items-start justify-between">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                 Moyenne / Jour Ouvré (Ajusté)
               </span>
-              <h3 className="mt-1 font-mono-numbers text-xl font-bold tracking-tight text-teal-400 sm:text-2xl">
-                {formatVal(stats.avgProfitAjustePerDay)}
+              <h3 className={`mt-1 font-mono text-xl font-bold tracking-tight sm:text-2xl ${
+                stats.avgProfitAjustePerDay >= 0 ? 'text-teal-400' : 'text-rose-400'
+              }`}>
+                {stats.avgProfitAjustePerDay >= 0 ? '+' : ''}{formatVal(stats.avgProfitAjustePerDay)}
                 <span className="ml-1 text-xs font-semibold text-teal-500/80">/j</span>
               </h3>
               <p className="mt-1 text-[11px] text-zinc-500">
                 Après retraits et pertes partielles
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-teal-900/40 bg-teal-950/30 text-teal-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-teal-500/20 bg-teal-950/30 text-teal-400">
               <Coins className="h-4 w-4" />
             </div>
           </div>
         </div>
 
-        {/* Card 3: Jours Ouvrés vs Actifs */}
-        <div className="glass-card group relative overflow-hidden rounded-[20px] border border-sky-800/50 p-4 transition-all duration-300 hover:border-sky-500/30">
-          <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br from-sky-500/10 to-transparent opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125" />
-          <div className="relative flex items-start justify-between">
+        {/* Card 3: Total Jours Ouvrés */}
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+          <div className="flex items-start justify-between">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                 Total Jours Ouvrés
               </span>
-              <h3 className="mt-1 font-mono-numbers text-xl font-bold tracking-tight text-sky-400 sm:text-2xl">
-                {stats.totalTradingDays} <span className="text-xs font-semibold text-sky-500/80">jours (Lun-Ven)</span>
+              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-white sm:text-2xl">
+                {stats.totalTradingDays}{' '}
+                <span className="text-xs font-semibold text-zinc-400">jours</span>
               </h3>
               <p className="mt-1 text-[11px] text-zinc-500">
-                {stats.activeDaysCount} jours avec activité · Hors week-end
+                {stats.activeDaysCount} jours avec activité · Lun-Ven
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-900/40 bg-sky-950/30 text-sky-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-300">
               <Calendar className="h-4 w-4" />
             </div>
           </div>
         </div>
 
         {/* Card 4: Meilleur Jour */}
-        <div className="glass-card group relative overflow-hidden rounded-[20px] border border-amber-800/50 p-4 transition-all duration-300 hover:border-amber-500/30">
-          <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-gradient-to-br from-amber-500/10 to-transparent opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125" />
-          <div className="relative flex items-start justify-between">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+          <div className="flex items-start justify-between">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                 Meilleur Jour
               </span>
-              <h3 className="mt-1 font-mono-numbers text-xl font-bold tracking-tight text-amber-400 sm:text-2xl">
-                {stats.bestDayRecord ? formatVal(stats.bestDayRecord.beneficeBrut) : '$0.00'}
+              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-amber-400 sm:text-2xl">
+                {stats.bestDayRecord ? `+${formatVal(stats.bestDayRecord.beneficeBrut)}` : '$0.00'}
               </h3>
-              <p className="mt-1 text-[11px] text-zinc-500">
+              <p className="mt-1 text-[11px] text-zinc-500 truncate max-w-[200px]">
                 {stats.bestDayRecord ? formatDateLabel(stats.bestDayRecord.date) : 'Aucun record'}
               </p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-900/40 bg-amber-950/30 text-amber-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-950/30 text-amber-400">
               <Trophy className="h-4 w-4" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Daily Evolution Bar Chart */}
+      {/* DAILY EVOLUTION BAR CHART */}
       {chartData.length > 0 && (
-        <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
+        <section className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5">
           <div className="mb-4 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div>
-              <h4 className="text-base font-semibold tracking-tight text-zinc-100 sm:text-lg">
-                Évolution des Bénéfices par Jour Ouvré (Lun-Ven)
+              <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+                Évolution des Bénéfices par Jour Ouvré
               </h4>
-              <p className="text-xs text-zinc-500">
+              <p className="text-[11px] text-zinc-400">
                 Calculé sur l&apos;ensemble des {stats.totalTradingDays} jours ouvrés (hors week-ends).
               </p>
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-medium text-zinc-400">
-              <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-sm bg-emerald-400" />
+            <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-950/30 px-2.5 py-1 text-emerald-300 font-medium">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
                 <span>Bénéfice Brut</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="h-3 w-3 rounded-sm bg-teal-400" />
+              <div className="flex items-center gap-1.5 rounded-lg border border-teal-500/20 bg-teal-950/30 px-2.5 py-1 text-teal-300 font-medium">
+                <span className="h-2 w-2 rounded-full bg-teal-400" />
                 <span>Bénéfice Ajusté</span>
               </div>
             </div>
           </div>
 
-          <div className="h-64 w-full font-mono-numbers lg:h-72">
+          <div className="h-64 w-full font-mono text-xs lg:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#18181b" vertical={false} />
+              <BarChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                 <XAxis
                   dataKey="date"
                   stroke="#52525b"
@@ -474,25 +473,24 @@ export default function DailyProfitView({
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0c0c0e',
-                    borderColor: '#1c1c24',
+                    backgroundColor: '#121318',
+                    borderColor: 'rgba(255,255,255,0.1)',
                     borderRadius: '12px',
                     color: '#fafafa',
                     fontSize: '12px',
-                    fontFamily: 'Plus Jakarta Sans, sans-serif',
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.7)',
                   }}
                   formatter={(value: unknown, name: unknown) => {
                     const label = name === 'beneficeBrut' ? 'Bénéfice Brut' : 'Bénéfice Ajusté';
                     return [formatVal(Number(value || 0)), label];
                   }}
-                  labelFormatter={(label) => `Date: ${formatDateLabel(String(label))}`}
+                  labelFormatter={(label) => `Date : ${formatDateLabel(String(label))}`}
                 />
                 <Bar dataKey="beneficeBrut" radius={[4, 4, 0, 0]}>
                   {chartData.map((entry, index) => (
                     <Cell
                       key={`cell-brut-${index}`}
-                      fill={entry.beneficeBrut > 0 ? '#34d399' : '#27272a'}
+                      fill={entry.beneficeBrut > 0 ? '#10b981' : '#27272a'}
                     />
                   ))}
                 </Bar>
@@ -500,48 +498,49 @@ export default function DailyProfitView({
                   {chartData.map((entry, index) => (
                     <Cell
                       key={`cell-ajuste-${index}`}
-                      fill={entry.beneficeAjuste >= 0 ? '#2dd4bf' : '#f43f5e'}
+                      fill={entry.beneficeAjuste >= 0 ? '#14b8a6' : '#f43f5e'}
                     />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Daily Records List / Table */}
-      <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
+      {/* DAILY RECORDS LIST / TABLE */}
+      <section className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5">
+        {/* TOOLBAR */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h4 className="text-base font-semibold tracking-tight text-zinc-100 sm:text-lg">
+            <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
               Historique Journalier
             </h4>
-            <p className="text-xs text-zinc-500">
+            <p className="text-[11px] text-zinc-400">
               Détail jour par jour sur l&apos;ensemble des jours ouvrés ({filteredRecords.length} jour{filteredRecords.length > 1 ? 's' : ''})
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-1">
+            <div className="flex items-center gap-1 rounded-xl border border-white/[0.08] bg-black/40 p-1">
               <button
                 onClick={() => setFilterMode('all_weekdays')}
-                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                   filterMode === 'all_weekdays'
-                    ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
                 <Calendar className="h-3.5 w-3.5" />
-                <span>Tous les jours ouvrés ({allRecords.length})</span>
+                <span>Tous les jours ({allRecords.length})</span>
               </button>
               <button
                 onClick={() => setFilterMode('active_only')}
-                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                   filterMode === 'active_only'
-                    ? 'bg-zinc-800 text-zinc-100 shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-white/10 text-white shadow-sm'
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
                 <Filter className="h-3.5 w-3.5" />
@@ -550,237 +549,240 @@ export default function DailyProfitView({
             </div>
 
             {/* Search Input */}
-            <div className="relative min-w-[200px]">
+            <div className="relative min-w-[200px] flex-1 sm:flex-initial">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
               <input
                 type="text"
                 placeholder="Rechercher une date ou nom..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-800"
+                className="h-8 w-full rounded-xl border border-white/[0.08] bg-black/40 pl-9 pr-3 text-xs text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-violet-500/50"
               />
             </div>
           </div>
         </div>
 
         {filteredRecords.length === 0 ? (
-          <div className="flex min-h-[180px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800/80 p-6 text-center">
+          <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-black/20 p-6 text-center">
             <Calendar className="mb-2 h-6 w-6 text-zinc-600" />
-            <p className="text-sm font-medium text-zinc-400">Aucune donnée disponible</p>
-            <p className="mt-1 text-xs text-zinc-600">
-              Les résultats s&apos;afficheront dès l&apos;ajout de vos premiers challenges ou retraits.
+            <p className="text-sm font-semibold text-zinc-300">Aucune donnée disponible</p>
+            <p className="mt-1 text-xs text-zinc-500">
+              Les résultats s&apos;afficheront dès l&apos;enregistrement de challenges ou retraits.
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-mono-numbers">
-              <thead>
-                <tr className="border-b border-zinc-800/70 text-[11px] font-bold uppercase tracking-[0.14em] text-zinc-500">
-                  <th className="pb-3 pl-2">Date (Lun-Ven)</th>
-                  {selectedTraderId === 'all' && <th className="pb-3">Profil(s)</th>}
-                  <th className="pb-3">Activité</th>
-                  <th className="pb-3 text-right">Bénéfice Brut</th>
-                  <th className="pb-3 text-right">Retraits / Pertes</th>
-                  <th className="pb-3 text-right">Bénéfice Ajusté</th>
-                  <th className="pb-3 pr-2 text-right">PnL Net Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/40">
-                {filteredRecords.map((rec) => {
-                  const isExpanded = expandedDates.has(rec.date);
-                  const hasItems = rec.challengeCount > 0 || rec.payoutCount > 0;
+          <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-black/20">
+            <div className="overflow-x-auto">
+              <table className="w-full table-auto border-collapse text-left text-xs">
+                <thead>
+                  <tr className="border-b border-white/[0.06] bg-[#121318]/90 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                    <th className="px-4 py-3">Date (Lun-Ven)</th>
+                    {selectedTraderId === 'all' && <th className="px-4 py-3">Profil(s)</th>}
+                    <th className="px-4 py-3">Activité</th>
+                    <th className="px-4 py-3 text-right">Bénéfice Brut</th>
+                    <th className="px-4 py-3 text-right">Retraits / Pertes</th>
+                    <th className="px-4 py-3 text-right">Bénéfice Ajusté</th>
+                    <th className="px-4 py-3 text-right">PnL Net Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04]">
+                  {filteredRecords.map((rec) => {
+                    const isExpanded = expandedDates.has(rec.date);
+                    const hasItems = rec.challengeCount > 0 || rec.payoutCount > 0;
 
-                  return (
-                    <Fragment key={rec.date}>
-                      <tr
-                        onClick={() => hasItems && toggleDateExpanded(rec.date)}
-                        className={`transition-colors ${hasItems ? 'cursor-pointer' : ''} ${
-                          rec.isZeroDay
-                            ? 'bg-zinc-950/30 text-zinc-500 opacity-70 hover:opacity-100 hover:bg-zinc-900/30'
-                            : 'hover:bg-zinc-900/40'
-                        } ${isExpanded ? 'bg-zinc-900/50' : ''}`}
-                      >
-                        <td className="py-3.5 pl-2 font-semibold text-zinc-200">
-                          <div className="flex items-center gap-2">
-                            {hasItems ? (
-                              <span className="text-zinc-500 hover:text-zinc-200 transition">
-                                {isExpanded ? (
-                                  <ChevronDown className="h-3.5 w-3.5 text-emerald-400" />
-                                ) : (
-                                  <ChevronRight className="h-3.5 w-3.5" />
-                                )}
-                              </span>
-                            ) : (
-                              <span className="w-3.5" />
-                            )}
-                            <span>{formatDateLabel(rec.date)}</span>
-                          </div>
-                        </td>
-
-                        {selectedTraderId === 'all' && (
-                          <td className="py-3.5">
-                            <div className="flex items-center gap-1.5">
-                              <User className="h-3 w-3 text-zinc-500" />
-                              <span className="text-zinc-400 font-sans text-xs">
-                                {rec.traderNames.length > 0 ? rec.traderNames.join(', ') : '-'}
-                              </span>
+                    return (
+                      <Fragment key={rec.date}>
+                        <tr
+                          onClick={() => hasItems && toggleDateExpanded(rec.date)}
+                          className={`transition ${hasItems ? 'cursor-pointer hover:bg-white/[0.04]' : ''} ${
+                            rec.isZeroDay
+                              ? 'bg-black/10 text-zinc-500 opacity-60 hover:opacity-100 hover:bg-white/[0.02]'
+                              : ''
+                          } ${isExpanded ? 'bg-white/[0.03]' : ''}`}
+                        >
+                          <td className="px-4 py-3 font-medium text-zinc-200">
+                            <div className="flex items-center gap-2">
+                              {hasItems ? (
+                                <span className="text-zinc-500 hover:text-zinc-200 transition">
+                                  {isExpanded ? (
+                                    <ChevronDown className="h-3.5 w-3.5 text-violet-400" />
+                                  ) : (
+                                    <ChevronRight className="h-3.5 w-3.5" />
+                                  )}
+                                </span>
+                              ) : (
+                                <span className="w-3.5" />
+                              )}
+                              <span className="font-mono">{formatDateLabel(rec.date)}</span>
                             </div>
                           </td>
-                        )}
 
-                        <td className="py-3.5 text-zinc-500 font-sans text-xs">
-                          {rec.isZeroDay ? (
-                            <span className="italic text-zinc-600">Aucune activité ($0)</span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1">
-                              {rec.challengeCount > 0 && `${rec.challengeCount} challenge${rec.challengeCount > 1 ? 's' : ''}`}
-                              {rec.challengeCount > 0 && rec.payoutCount > 0 && ' · '}
-                              {rec.payoutCount > 0 && `${rec.payoutCount} retrait${rec.payoutCount > 1 ? 's' : ''}`}
-                              {hasItems && (
-                                <span className="ml-1 text-[10px] text-zinc-400 opacity-75">
-                                  {isExpanded ? '(masquer)' : '(détail)'}
+                          {selectedTraderId === 'all' && (
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1.5">
+                                <User className="h-3 w-3 text-zinc-500" />
+                                <span className="text-zinc-400 text-xs truncate max-w-[150px]">
+                                  {rec.traderNames.length > 0 ? rec.traderNames.join(', ') : '-'}
                                 </span>
-                              )}
-                            </span>
+                              </div>
+                            </td>
                           )}
-                        </td>
 
-                        <td className="py-3.5 text-right font-bold text-emerald-400">
-                          {rec.beneficeBrut > 0 ? `+${formatVal(rec.beneficeBrut)}` : '$0.00'}
-                        </td>
+                          <td className="px-4 py-3 text-zinc-400">
+                            {rec.isZeroDay ? (
+                              <span className="text-zinc-600 italic">Aucune activité ($0)</span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 font-mono text-[11px]">
+                                {rec.challengeCount > 0 && `${rec.challengeCount} ch.`}
+                                {rec.challengeCount > 0 && rec.payoutCount > 0 && ' · '}
+                                {rec.payoutCount > 0 && `${rec.payoutCount} retr.`}
+                                {hasItems && (
+                                  <span className="ml-1 text-[10px] text-zinc-500 font-sans">
+                                    {isExpanded ? '(fermer)' : '(détail)'}
+                                  </span>
+                                )}
+                              </span>
+                            )}
+                          </td>
 
-                        <td className="py-3.5 text-right font-medium text-amber-400">
-                          {rec.payoutAmount > 0 || rec.specialLoss < 0
-                            ? `-${formatVal(rec.payoutAmount + Math.abs(rec.specialLoss))}`
-                            : '$0.00'}
-                        </td>
+                          <td className="px-4 py-3 text-right font-mono font-bold text-emerald-400">
+                            {rec.beneficeBrut > 0 ? `+${formatVal(rec.beneficeBrut)}` : '$0.00'}
+                          </td>
 
-                        <td
-                          className={`py-3.5 text-right font-bold ${
-                            rec.beneficeAjuste > 0
-                              ? 'text-teal-400'
-                              : rec.beneficeAjuste < 0
-                              ? 'text-rose-400'
-                              : 'text-zinc-500'
-                          }`}
-                        >
-                          {rec.beneficeAjuste > 0
-                            ? `+${formatVal(rec.beneficeAjuste)}`
-                            : formatVal(rec.beneficeAjuste)}
-                        </td>
+                          <td className="px-4 py-3 text-right font-mono font-medium text-amber-400">
+                            {rec.payoutAmount > 0 || rec.specialLoss < 0
+                              ? `-${formatVal(rec.payoutAmount + Math.abs(rec.specialLoss))}`
+                              : '$0.00'}
+                          </td>
 
-                        <td
-                          className={`py-3.5 pr-2 text-right font-semibold ${
-                            rec.netPnL > 0
-                              ? 'text-zinc-300'
-                              : rec.netPnL < 0
-                              ? 'text-rose-400/90'
-                              : 'text-zinc-600'
-                          }`}
-                        >
-                          {rec.netPnL > 0 ? `+${formatVal(rec.netPnL)}` : formatVal(rec.netPnL)}
-                        </td>
-                      </tr>
+                          <td
+                            className={`px-4 py-3 text-right font-mono font-bold ${
+                              rec.beneficeAjuste > 0
+                                ? 'text-teal-400'
+                                : rec.beneficeAjuste < 0
+                                ? 'text-rose-400'
+                                : 'text-zinc-500'
+                            }`}
+                          >
+                            {rec.beneficeAjuste > 0
+                              ? `+${formatVal(rec.beneficeAjuste)}`
+                              : formatVal(rec.beneficeAjuste)}
+                          </td>
 
-                      {isExpanded && hasItems && (
-                        <tr className="bg-zinc-950/70 border-b border-zinc-800/60">
-                          <td colSpan={selectedTraderId === 'all' ? 7 : 6} className="px-4 py-3">
-                            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-3 space-y-3 font-sans">
-                              {rec.challenges.length > 0 && (
-                                <div>
-                                  <div className="flex items-center justify-between mb-2">
-                                    <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-                                      Challenges de cette journée ({rec.challenges.length}) :
-                                    </p>
-                                    <span className="text-[10px] text-zinc-500">
-                                      Attribué selon la date de clôture (ou d&apos;achat)
-                                    </span>
-                                  </div>
-                                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                                    {rec.challenges.map((c) => {
-                                      const tot = getChallengeTotal(c);
-                                      const isPos = tot > 0;
-                                      return (
-                                        <div
-                                          key={c.id}
-                                          className={`flex items-center justify-between rounded-xl border p-2.5 text-xs transition ${
-                                            isPos
-                                              ? 'border-emerald-500/30 bg-emerald-950/20'
-                                              : 'border-zinc-800 bg-zinc-950/80'
-                                          }`}
-                                        >
-                                          <div className="min-w-0 pr-2">
-                                            <div className="flex items-center gap-1.5">
-                                              <span className="font-semibold text-zinc-100 truncate">
-                                                {c.account_name}
-                                              </span>
-                                              <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-300">
-                                                {traderMap.get(c.trader_id) || 'Profil'}
-                                              </span>
-                                            </div>
-                                            <div className="mt-0.5 text-[11px] text-zinc-500">
-                                              Acheté le {c.purchase_date}
-                                              {c.closed_date && (
-                                                <span className="text-emerald-400 font-medium">
-                                                  {' '}· Clôturé le {c.closed_date}
+                          <td
+                            className={`px-4 py-3 text-right font-mono font-semibold ${
+                              rec.netPnL > 0
+                                ? 'text-zinc-200'
+                                : rec.netPnL < 0
+                                ? 'text-rose-400/90'
+                                : 'text-zinc-600'
+                            }`}
+                          >
+                            {rec.netPnL > 0 ? `+${formatVal(rec.netPnL)}` : formatVal(rec.netPnL)}
+                          </td>
+                        </tr>
+
+                        {isExpanded && hasItems && (
+                          <tr className="bg-black/40 border-b border-white/[0.06]">
+                            <td colSpan={selectedTraderId === 'all' ? 7 : 6} className="px-4 py-3">
+                              <div className="rounded-xl border border-white/[0.06] bg-[#0d0e12] p-3.5 space-y-3">
+                                {rec.challenges.length > 0 && (
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                                        Challenges de cette journée ({rec.challenges.length})
+                                      </p>
+                                      <span className="text-[10px] text-zinc-500">
+                                        Attribué selon clôture (ou achat)
+                                      </span>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                                      {rec.challenges.map((c) => {
+                                        const tot = getChallengeTotal(c);
+                                        const isPos = tot > 0;
+                                        return (
+                                          <div
+                                            key={c.id}
+                                            className={`flex items-center justify-between rounded-xl border p-2.5 text-xs transition ${
+                                              isPos
+                                                ? 'border-emerald-500/20 bg-emerald-950/20'
+                                                : 'border-white/[0.06] bg-black/30'
+                                            }`}
+                                          >
+                                            <div className="min-w-0 pr-2">
+                                              <div className="flex items-center gap-1.5">
+                                                <span className="font-semibold text-zinc-100 truncate">
+                                                  {c.account_name}
                                                 </span>
+                                                <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-zinc-300">
+                                                  {traderMap.get(c.trader_id) || 'Profil'}
+                                                </span>
+                                              </div>
+                                              <div className="mt-0.5 text-[11px] text-zinc-500">
+                                                Acheté le {c.purchase_date}
+                                                {c.closed_date && (
+                                                  <span className="text-emerald-400 font-medium">
+                                                    {' '}· Clôturé le {c.closed_date}
+                                                  </span>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                              <div
+                                                className={`font-mono font-bold text-sm ${
+                                                  isPos ? 'text-emerald-400' : 'text-zinc-400'
+                                                }`}
+                                              >
+                                                {isPos ? `+${formatVal(tot)}` : formatVal(tot)}
+                                              </div>
+                                              {isPos ? (
+                                                <span className="inline-flex items-center rounded-md bg-emerald-950/80 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300">
+                                                  Bénéfice Brut
+                                                </span>
+                                              ) : (
+                                                <span className="text-[10px] text-zinc-500">Non positif</span>
                                               )}
                                             </div>
                                           </div>
-                                          <div className="text-right shrink-0">
-                                            <div
-                                              className={`font-mono font-bold text-sm ${
-                                                isPos ? 'text-emerald-400' : 'text-zinc-400'
-                                              }`}
-                                            >
-                                              {isPos ? `+${formatVal(tot)}` : formatVal(tot)}
-                                            </div>
-                                            {isPos ? (
-                                              <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-950/80 border border-emerald-900/60 px-1.5 py-0.2 text-[9px] font-bold text-emerald-300">
-                                                Bénéfice Brut
-                                              </span>
-                                            ) : (
-                                              <span className="text-[10px] text-zinc-500">Non positif</span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
+                                        );
+                                      })}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                )}
 
-                              {rec.payouts.length > 0 && (
-                                <div className="border-t border-zinc-800/60 pt-2">
-                                  <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-400 mb-1.5">
-                                    Retraits personnels (Payouts) :
-                                  </p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {rec.payouts.map((p) => (
-                                      <div
-                                        key={p.id}
-                                        className="flex items-center gap-2 rounded-xl border border-amber-900/50 bg-amber-950/20 px-3 py-1.5 text-xs text-amber-300"
-                                      >
-                                        <span className="font-semibold font-mono">-{formatVal(p.amount)}</span>
-                                        <span className="text-[10px] text-amber-400/80">
-                                          ({traderMap.get(p.trader_id) || 'Profil'})
-                                        </span>
-                                      </div>
-                                    ))}
+                                {rec.payouts.length > 0 && (
+                                  <div className="border-t border-white/[0.06] pt-2.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-2">
+                                      Retraits personnels ({rec.payouts.length})
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {rec.payouts.map((p) => (
+                                        <div
+                                          key={p.id}
+                                          className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-950/20 px-3 py-1.5 text-xs text-amber-300"
+                                        >
+                                          <span className="font-mono font-bold">-{formatVal(p.amount)}</span>
+                                          <span className="text-[10px] text-amber-400/80">
+                                            ({traderMap.get(p.trader_id) || 'Profil'})
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

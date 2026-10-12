@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Challenge } from '@/lib/db';
 import { X, Save, AlertCircle } from 'lucide-react';
 
@@ -38,7 +38,6 @@ export default function ChallengeModal({
 
   useEffect(() => {
     if (challenge) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAccountName(challenge.account_name || '');
       setPurchaseDate(challenge.purchase_date || '');
       setCost(challenge.cost ? String(Math.abs(challenge.cost)) : '');
@@ -71,14 +70,27 @@ export default function ChallengeModal({
     setErrorMsg('');
   }, [challenge, isOpen]);
 
+  const previewTotal = useMemo(() => {
+    const costNum = cost.trim() !== '' ? -Math.abs(Number(cost) || 0) : 0;
+    const p2 = Number(phase2) || 0;
+    const p3 = Number(phase3) || 0;
+    const p4 = Number(phase4) || 0;
+    const p5 = Number(phase5) || 0;
+    const p6 = Number(phase6) || 0;
+    const p7 = Number(phase7) || 0;
+    const p8 = Number(phase8) || 0;
+    const p9 = Number(phase9) || 0;
+    return costNum + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
+  }, [cost, phase2, phase3, phase4, phase5, phase6, phase7, phase8, phase9]);
+
   if (!isOpen) return null;
 
   const isCreateBlocked = !challenge && traderId === 'all';
 
   const inputClass =
-    'w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3 py-2.5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-800';
-  const labelClass = 'mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500';
-  const sectionClass = 'rounded-[24px] border border-zinc-800/70 bg-zinc-950/45 p-4 sm:p-5';
+    'w-full rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-xs font-mono text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30';
+  const labelClass = 'mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-zinc-400';
+  const sectionClass = 'rounded-xl border border-white/[0.06] bg-black/30 p-4';
 
   const toNumOrNull = (val: string) => {
     if (val.trim() === '') return null;
@@ -90,7 +102,7 @@ export default function ChallengeModal({
     e.preventDefault();
 
     if (isCreateBlocked) {
-      setErrorMsg('Sélectionnez d\'abord un profil pour rattacher ce challenge.');
+      setErrorMsg("Sélectionnez d'abord un profil pour rattacher ce challenge.");
       return;
     }
 
@@ -104,18 +116,21 @@ export default function ChallengeModal({
       return;
     }
 
+    const costNum = Number(cost);
+    if (cost.trim() !== '' && (Number.isNaN(costNum) || costNum < 0)) {
+      setErrorMsg('Le coût doit être un nombre positif ou nul.');
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMsg('');
 
     try {
-      const costNum = toNumOrNull(cost) || 0;
-      const finalCost = -Math.abs(costNum);
-
-      const challengeData = {
+      const challengeData: Omit<Challenge, 'id'> = {
         trader_id: challenge ? challenge.trader_id : traderId,
         account_name: accountName.trim(),
         purchase_date: purchaseDate,
-        cost: finalCost,
+        cost: cost.trim() !== '' ? -Math.abs(costNum) : 0,
         phase2_day1: toNumOrNull(phase2),
         phase3_day2: toNumOrNull(phase3),
         phase4_funded_day1: toNumOrNull(phase4),
@@ -140,222 +155,243 @@ export default function ChallengeModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-zinc-950/85 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md animate-fade-in"
       onClick={onClose}
     >
       <div className="flex min-h-full items-stretch justify-center p-0 sm:items-center sm:p-4">
         <div
-          className="glass-panel flex h-screen w-full max-w-4xl flex-col border border-zinc-800/70 bg-[#080809]/95 sm:h-auto sm:max-h-[90vh] sm:rounded-[32px]"
+          className="relative flex h-screen w-full max-w-4xl flex-col rounded-2xl border border-white/10 bg-[#121318] shadow-2xl shadow-black sm:h-auto sm:max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-start justify-between border-b border-zinc-800/70 px-4 py-4 sm:px-6">
-            <div className="pr-4">
-              <h3 className="text-lg font-semibold tracking-tight text-zinc-100">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+            <div>
+              <h3 className="text-sm font-semibold tracking-tight text-zinc-100 sm:text-base">
                 {challenge ? 'Modifier le challenge' : 'Ajouter un challenge'}
               </h3>
-              <p className="mt-1 text-sm leading-6 text-zinc-500">
-                Renseigne les résultats du challenge pour garder un suivi clair et propre sur mobile comme sur desktop.
+              <p className="mt-0.5 text-xs text-zinc-400">
+                Saisissez les résultats et phases de votre compte de trading.
               </p>
             </div>
 
             <button
               onClick={onClose}
-              className="rounded-2xl p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
+              className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-              <div className="space-y-4">
-                {isCreateBlocked && (
-                  <div className="flex items-start gap-3 rounded-2xl border border-amber-900/60 bg-amber-950/20 p-4 text-sm text-amber-200">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>Sélectionne un profil précis avant de créer un nouveau challenge.</span>
-                  </div>
-                )}
+            <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
+              {isCreateBlocked && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-amber-900/40 bg-amber-950/20 p-3 text-xs text-amber-200">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>Sélectionnez un profil précis avant de créer un nouveau challenge.</span>
+                </div>
+              )}
 
-                {errorMsg && (
-                  <div className="flex items-start gap-3 rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 text-sm text-rose-300">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{errorMsg}</span>
-                  </div>
-                )}
+              {errorMsg && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-rose-900/40 bg-rose-950/20 p-3 text-xs text-rose-300">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
 
-                <section className={sectionClass}>
-                  <div className="mb-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">1. Informations de base</p>
-                  </div>
+              {/* 1. Base info */}
+              <section className={sectionClass}>
+                <div className="mb-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  1. Informations générales
+                </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                      <label className={labelClass}>Nom du compte</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Ex: LFE050-TEST001"
-                        value={accountName}
-                        onChange={(e) => setAccountName(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Date d&apos;achat</label>
-                      <input
-                        type="date"
-                        required
-                        value={purchaseDate}
-                        onChange={(e) => setPurchaseDate(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Coût payé</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Ex: 84.00"
-                        value={cost}
-                        onChange={(e) => setCost(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                          Date de fin (clôture)
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => setClosedDate(new Date().toISOString().split('T')[0])}
-                          className="text-[10px] text-emerald-400 hover:text-emerald-300 font-medium cursor-pointer"
-                          title="Définir à aujourd'hui"
-                        >
-                          Aujourd&apos;hui
-                        </button>
-                      </div>
-                      <input
-                        type="date"
-                        value={closedDate}
-                        onChange={(e) => setClosedDate(e.target.value)}
-                        className={inputClass}
-                        placeholder="Optionnel"
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                <section className={sectionClass}>
-                  <div className="mb-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">2. Phases d&apos;évaluation</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <label className={labelClass}>Phase 2 - Jour 1</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Ex: 104.94 ou -85.97"
-                        value={phase2}
-                        onChange={(e) => setPhase2(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Phase 3 - Jour 2</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Ex: 198.71 ou -166.16"
-                        value={phase3}
-                        onChange={(e) => setPhase3(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                <section className={sectionClass}>
-                  <div className="mb-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">3. Phase funded et payout</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-                    {[
-                      { label: 'Funded J1', value: phase4, onChange: setPhase4 },
-                      { label: 'Funded J2', value: phase5, onChange: setPhase5 },
-                      { label: 'Funded J3', value: phase6, onChange: setPhase6 },
-                      { label: 'Funded J4', value: phase7, onChange: setPhase7 },
-                      { label: 'Funded J5', value: phase8, onChange: setPhase8 },
-                    ].map((field) => (
-                      <div key={field.label}>
-                        <label className={labelClass}>{field.label}</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          value={field.value}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          className={inputClass}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4">
-                    <label className={labelClass}>Premier payout retiré</label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <label className={labelClass}>Nom du compte</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      placeholder="Ex: 1786.00"
-                      value={phase9}
-                      onChange={(e) => setPhase9(e.target.value)}
+                      type="text"
+                      required
+                      placeholder="Ex: LFE050-TEST001"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      className={inputClass}
+                      autoFocus
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Date d&apos;achat</label>
+                    <input
+                      type="date"
+                      required
+                      value={purchaseDate}
+                      onChange={(e) => setPurchaseDate(e.target.value)}
                       className={inputClass}
                     />
                   </div>
-                </section>
 
-                <section className={sectionClass}>
-                  <div className="mb-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">4. Notes</p>
+                  <div>
+                    <label className={labelClass}>Prix d&apos;achat ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 84.00"
+                      value={cost}
+                      onChange={(e) => setCost(e.target.value)}
+                      className={inputClass}
+                    />
                   </div>
 
-                  <label className={labelClass}>Commentaires</label>
-                  <textarea
-                    rows={4}
-                    placeholder="Notes complémentaires, rappel de recalcul, contexte du compte..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className={`${inputClass} min-h-[104px] resize-y`}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                        Date de clôture
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setClosedDate(new Date().toISOString().split('T')[0])}
+                        className="text-[10px] text-emerald-400 hover:text-emerald-300"
+                      >
+                        Aujourd&apos;hui
+                      </button>
+                    </div>
+                    <input
+                      type="date"
+                      value={closedDate}
+                      onChange={(e) => setClosedDate(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* 2. Evaluation Phases */}
+              <section className={sectionClass}>
+                <div className="mb-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  2. Phases d&apos;évaluation
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Phase 2 — Jour 1 ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 104.94 ou -85.97"
+                      value={phase2}
+                      onChange={(e) => setPhase2(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className={labelClass}>Phase 3 — Jour 2 ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 198.71 ou -166.16"
+                      value={phase3}
+                      onChange={(e) => setPhase3(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* 3. Funded Phases & Payout */}
+              <section className={sectionClass}>
+                <div className="mb-3 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  3. Phases Funded &amp; Payout
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-5">
+                  {[
+                    { label: 'Funded J1', value: phase4, onChange: setPhase4 },
+                    { label: 'Funded J2', value: phase5, onChange: setPhase5 },
+                    { label: 'Funded J3', value: phase6, onChange: setPhase6 },
+                    { label: 'Funded J4', value: phase7, onChange: setPhase7 },
+                    { label: 'Funded J5', value: phase8, onChange: setPhase8 },
+                  ].map((field) => (
+                    <div key={field.label}>
+                      <label className={labelClass}>{field.label}</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3">
+                  <label className={labelClass}>Payout Retiré ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 1786.00"
+                    value={phase9}
+                    onChange={(e) => setPhase9(e.target.value)}
+                    className={inputClass}
                   />
-                </section>
-              </div>
+                </div>
+              </section>
+
+              {/* 4. Notes */}
+              <section className={sectionClass}>
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  4. Notes &amp; Observations
+                </div>
+                <textarea
+                  rows={3}
+                  placeholder="Notes complémentaires, contexte du compte, règles prop firm..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className={`${inputClass} font-sans resize-none`}
+                />
+              </section>
             </div>
 
-            <div className="flex flex-col-reverse gap-2 border-t border-zinc-800/70 bg-[#080809]/95 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-800 px-4 text-sm font-medium text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Annuler
-              </button>
+            {/* Footer */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] p-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-zinc-400 font-medium">PnL Net Calculé :</span>
+                <span
+                  className={`font-mono text-sm font-bold ${
+                    previewTotal > 0
+                      ? 'text-emerald-400'
+                      : previewTotal < 0
+                      ? 'text-rose-400'
+                      : 'text-zinc-400'
+                  }`}
+                >
+                  {previewTotal > 0 ? '+' : ''}
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                  }).format(previewTotal)}
+                </span>
+              </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting || isCreateBlocked}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
-              >
-                <Save className="h-4 w-4" />
-                {isSubmitting ? 'Enregistrement...' : 'Sauvegarder'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  className="rounded-xl border border-white/10 px-3.5 py-2 text-xs font-medium text-zinc-400 transition hover:border-white/20 hover:text-white"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isCreateBlocked}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-violet-500 disabled:opacity-40"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  <span>{isSubmitting ? 'Enregistrement...' : 'Sauvegarder'}</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>

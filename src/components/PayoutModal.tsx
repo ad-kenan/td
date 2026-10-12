@@ -28,7 +28,6 @@ export default function PayoutModal({
 
   useEffect(() => {
     if (payout) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAmount(payout.amount ? String(payout.amount) : '');
       setPayoutDate(payout.payout_date || '');
       setNotes(payout.notes || '');
@@ -45,9 +44,9 @@ export default function PayoutModal({
   const isCreateBlocked = !payout && traderId === 'all';
 
   const inputClass =
-    'w-full rounded-2xl border border-zinc-800 bg-zinc-950/80 px-3 py-2.5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-800';
-  const labelClass = 'mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500';
-  const sectionClass = 'rounded-[24px] border border-zinc-800/70 bg-zinc-950/45 p-4 sm:p-5';
+    'w-full rounded-xl border border-white/10 bg-black/50 px-3.5 py-2.5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30';
+  const labelClass = 'mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400';
+  const sectionClass = 'rounded-xl border border-white/[0.06] bg-black/30 p-4';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,108 +90,106 @@ export default function PayoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-zinc-950/85 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md animate-fade-in"
       onClick={onClose}
     >
       <div className="flex min-h-full items-stretch justify-center p-0 sm:items-center sm:p-4">
         <div
-          className="glass-panel flex h-screen w-full max-w-xl flex-col border border-zinc-800/70 bg-[#080809]/95 sm:h-auto sm:max-h-[90vh] sm:rounded-[32px]"
+          className="relative flex h-screen w-full max-w-lg flex-col rounded-2xl border border-white/10 bg-[#121318] shadow-2xl shadow-black sm:h-auto sm:max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-start justify-between border-b border-zinc-800/70 px-4 py-4 sm:px-6">
-            <div className="pr-4">
-              <h3 className="text-lg font-semibold tracking-tight text-zinc-100">
-                {payout ? 'Modifier le retrait de bénéfices' : 'Enregistrer un retrait de bénéfices'}
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+            <div>
+              <h3 className="text-sm font-semibold tracking-tight text-zinc-100 sm:text-base">
+                {payout ? 'Modifier le retrait' : 'Ajouter un retrait'}
               </h3>
-              <p className="mt-1 text-sm leading-6 text-zinc-500">
-                Déclarez les fonds retirés des bénéfices ajustés pour ce trader.
+              <p className="mt-0.5 text-xs text-zinc-400">
+                Enregistrez un retrait de gains pour ajuster votre trésorerie.
               </p>
             </div>
 
             <button
               onClick={onClose}
-              className="rounded-2xl p-2 text-zinc-500 transition hover:bg-zinc-900 hover:text-zinc-100"
+              className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
-              <div className="space-y-4">
-                {isCreateBlocked && (
-                  <div className="flex items-start gap-3 rounded-2xl border border-amber-900/60 bg-amber-950/20 p-4 text-sm text-amber-200">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>Sélectionnez un profil précis avant de déclarer un retrait.</span>
+            <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
+              {isCreateBlocked && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-amber-900/40 bg-amber-950/20 p-3 text-xs text-amber-200">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>Sélectionnez un profil précis avant d&apos;enregistrer un retrait.</span>
+                </div>
+              )}
+
+              {errorMsg && (
+                <div className="flex items-start gap-2.5 rounded-xl border border-rose-900/40 bg-rose-950/20 p-3 text-xs text-rose-300">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              <div className={sectionClass}>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>Montant ($)</label>
+                    <input
+                      type="number"
+                      step="any"
+                      required
+                      placeholder="Ex: 1250"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className={inputClass}
+                      autoFocus
+                    />
                   </div>
-                )}
 
-                {errorMsg && (
-                  <div className="flex items-start gap-3 rounded-2xl border border-rose-900/60 bg-rose-950/20 p-4 text-sm text-rose-300">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>{errorMsg}</span>
+                  <div>
+                    <label className={labelClass}>Date de retrait</label>
+                    <input
+                      type="date"
+                      required
+                      value={payoutDate}
+                      onChange={(e) => setPayoutDate(e.target.value)}
+                      className={inputClass}
+                    />
                   </div>
-                )}
+                </div>
 
-                <section className={sectionClass}>
-                  <div className="space-y-4">
-                    <div>
-                      <label className={labelClass}>Montant retiré ($)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        required
-                        placeholder="Ex: 500.00"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className={inputClass}
-                        autoFocus
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Date du retrait</label>
-                      <input
-                        type="date"
-                        required
-                        value={payoutDate}
-                        onChange={(e) => setPayoutDate(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>Commentaires / Notes</label>
-                      <textarea
-                        rows={3}
-                        placeholder="Ex: Retrait Crypto, Virement bancaire, Payout mensuel..."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className={`${inputClass} min-h-[80px] resize-y`}
-                      />
-                    </div>
-                  </div>
-                </section>
+                <div className="mt-3">
+                  <label className={labelClass}>Notes ou référence</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Ex: Virement reçu sur compte..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className={`${inputClass} resize-none`}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col-reverse gap-2 border-t border-zinc-800/70 bg-[#080809]/95 px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-2 border-t border-white/[0.06] p-4">
               <button
                 type="button"
                 onClick={onClose}
-                disabled={isSubmitting}
-                className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-800 px-4 text-sm font-medium text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl border border-white/10 px-3.5 py-2 text-xs font-medium text-zinc-400 transition hover:border-white/20 hover:text-white"
               >
                 Annuler
               </button>
-
               <button
                 type="submit"
                 disabled={isSubmitting || isCreateBlocked}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-violet-500 disabled:opacity-40"
               >
-                <Save className="h-4 w-4" />
-                {isSubmitting ? 'Enregistrement...' : 'Sauvegarder'}
+                <Save className="h-3.5 w-3.5" />
+                <span>{isSubmitting ? 'Enregistrement...' : 'Sauvegarder'}</span>
               </button>
             </div>
           </form>

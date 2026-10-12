@@ -1,11 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Payout } from '@/lib/db';
-import { Edit3, Trash2, Search, ArrowUpDown, Plus, Coins } from 'lucide-react';
+import { Payout, Trader } from '@/lib/db';
+import { Edit3, Trash2, Search, ArrowUpDown, Plus, ArrowDownToLine, User } from 'lucide-react';
 
 interface PayoutsGridProps {
   payouts: Payout[];
+  traders?: Trader[];
+  selectedTraderId?: string;
   onEditPayout: (payout: Payout) => void;
   onDeletePayout: (id: string) => void;
   onAddPayout: () => void;
@@ -17,6 +19,8 @@ type SortOrder = 'asc' | 'desc';
 
 export default function PayoutsGrid({
   payouts,
+  traders = [],
+  selectedTraderId = 'all',
   onEditPayout,
   onDeletePayout,
   onAddPayout,
@@ -25,6 +29,12 @@ export default function PayoutsGrid({
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<SortField>('payout_date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  const traderMap = useMemo(() => {
+    const map = new Map<string, string>();
+    traders.forEach((t) => map.set(t.id, t.name));
+    return map;
+  }, [traders]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -38,8 +48,10 @@ export default function PayoutsGrid({
   const processedPayouts = useMemo(() => {
     return payouts
       .filter((payout) => {
-        const matchesSearch = payout.notes?.toLowerCase().includes(search.toLowerCase()) || false;
-        return search === '' ? true : matchesSearch;
+        const matchesNotes = payout.notes?.toLowerCase().includes(search.toLowerCase()) || false;
+        const matchesTrader =
+          traderMap.get(payout.trader_id)?.toLowerCase().includes(search.toLowerCase()) || false;
+        return search === '' ? true : matchesNotes || matchesTrader;
       })
       .sort((a, b) => {
         const valA = a[sortField];
@@ -53,14 +65,14 @@ export default function PayoutsGrid({
           return sortOrder === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
         }
       });
-  }, [payouts, search, sortField, sortOrder]);
+  }, [payouts, search, sortField, sortOrder, traderMap]);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(val);
+    }).format(Math.abs(val));
   };
 
   const formatDate = (value: string) => {
@@ -74,104 +86,108 @@ export default function PayoutsGrid({
     }).format(date);
   };
 
-  const resultsLabel =
-    search
-      ? `${processedPayouts.length} retrait${processedPayouts.length > 1 ? 's' : ''} trouvé${processedPayouts.length > 1 ? 's' : ''}`
-      : `${processedPayouts.length} retrait${processedPayouts.length > 1 ? 's' : ''} enregistré${processedPayouts.length > 1 ? 's' : ''}`;
+  const totalAmount = processedPayouts.reduce((sum, p) => sum + (p.amount || 0), 0);
 
   const emptyState = (
-    <div className="rounded-[24px] border border-dashed border-zinc-800 bg-zinc-950/20 px-6 py-14 text-center">
-      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/60 text-zinc-400">
-        <Coins className="h-5 w-5" />
+    <div className="rounded-2xl border border-dashed border-white/10 bg-black/20 px-6 py-12 text-center">
+      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-zinc-500">
+        <ArrowDownToLine className="h-5 w-5" />
       </div>
-      <p className="mt-4 text-base font-medium text-zinc-200">Aucun retrait enregistré</p>
-      <p className="mt-2 text-sm leading-6 text-zinc-500">
+      <p className="mt-3 text-sm font-semibold text-zinc-200">Aucun retrait trouvé</p>
+      <p className="mt-1 text-xs text-zinc-500">
         {search
-          ? 'Ajuste ta recherche pour retrouver tes données.'
-          : 'Commence par sélectionner un profil puis ajoute ton premier retrait de bénéfices.'}
+          ? 'Aucun résultat ne correspond à votre recherche.'
+          : 'Sélectionnez un profil pour ajouter votre premier retrait.'}
       </p>
     </div>
   );
 
   return (
     <section className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5">
-      <div className="mb-4 flex flex-col gap-3">
-        <div className="flex flex-col gap-4">
-          <div>
-            <h3 className="text-lg font-semibold tracking-tight text-zinc-100">Retraits de bénéfices personnels</h3>
-            <p className="mt-1 text-sm text-zinc-500">{resultsLabel}</p>
+      {/* TOOLBAR */}
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+              Retraits de Bénéfices Personnels
+            </h3>
+            <span className="rounded-full border border-emerald-500/20 bg-emerald-950/40 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-300">
+              +{formatCurrency(totalAmount)}
+            </span>
           </div>
-
-          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_230px] md:items-center">
-            <div className="relative min-w-0">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Rechercher dans les notes..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-11 w-full rounded-2xl border border-zinc-800 bg-zinc-950/50 pl-10 pr-4 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-800"
-              />
-            </div>
-
-            <button
-              onClick={onAddPayout}
-              disabled={!canAddPayout}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-zinc-200/10 bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900 disabled:text-zinc-500"
-            >
-              <Plus className="h-4 w-4" />
-              Ajouter un retrait
-            </button>
-          </div>
+          <p className="text-[11px] text-zinc-400">
+            {processedPayouts.length} virement{processedPayouts.length > 1 ? 's' : ''} enregistré{processedPayouts.length > 1 ? 's' : ''}
+          </p>
         </div>
 
-        {!canAddPayout && (
-          <p className="text-sm leading-6 text-zinc-500">
-            Sélectionne un profil précis pour ajouter un retrait et le lier à ses bénéfices.
-          </p>
-        )}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Recherche */}
+          <div className="relative min-w-[200px] flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
+            <input
+              type="text"
+              placeholder="Rechercher par note ou trader..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-9 w-full rounded-xl border border-white/[0.08] bg-black/40 pl-9 pr-3 text-xs text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-violet-500/50"
+            />
+          </div>
+
+          <button
+            onClick={onAddPayout}
+            disabled={!canAddPayout}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-violet-500 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
+            <span>Ajouter un retrait</span>
+          </button>
+        </div>
       </div>
 
       {processedPayouts.length === 0 ? (
         emptyState
       ) : (
         <>
-          {/* Mobile view */}
-          <div className="space-y-3 md:hidden">
+          {/* MOBILE VIEW */}
+          <div className="space-y-2.5 md:hidden">
             {processedPayouts.map((payout) => (
               <article
                 key={payout.id}
-                className="rounded-[24px] border border-zinc-800/70 bg-zinc-950/35 p-4 shadow-lg shadow-black/10"
+                className="rounded-xl border border-white/[0.06] bg-black/30 p-3.5 shadow-sm"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                      {formatDate(payout.payout_date)}
-                    </p>
-                    <p className="mt-2 text-sm text-zinc-400 leading-5">
-                      {payout.notes || '—'}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] font-semibold text-zinc-500">
+                        {formatDate(payout.payout_date)}
+                      </span>
+                      {selectedTraderId === 'all' && (
+                        <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
+                          {traderMap.get(payout.trader_id) || 'Profil'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-zinc-300 leading-snug">
+                      {payout.notes || 'Sans note particulière'}
                     </p>
                   </div>
 
-                  <span className="rounded-full border border-amber-900/60 bg-amber-950/20 px-2.5 py-1 text-xs font-semibold text-amber-300">
-                    {formatCurrency(payout.amount)}
+                  <span className="rounded-lg border border-emerald-500/20 bg-emerald-950/40 px-2 py-0.5 font-mono text-xs font-bold text-emerald-300 shrink-0">
+                    +{formatCurrency(payout.amount)}
                   </span>
                 </div>
 
-                <div className="mt-4 flex gap-2">
+                <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => onEditPayout(payout)}
-                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/70 text-sm font-medium text-zinc-200 transition hover:border-zinc-700 hover:text-white"
+                    className="flex-1 rounded-lg border border-white/10 py-1.5 text-xs font-medium text-zinc-300 hover:bg-white/5"
                   >
-                    <Edit3 className="h-4 w-4" />
                     Modifier
                   </button>
-
                   <button
                     onClick={() => onDeletePayout(payout.id)}
-                    className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/70 text-sm font-medium text-zinc-300 transition hover:border-rose-900/70 hover:bg-rose-950/20 hover:text-rose-300"
+                    className="flex-1 rounded-lg border border-rose-900/40 py-1.5 text-xs font-medium text-rose-400 hover:bg-rose-950/20"
                   >
-                    <Trash2 className="h-4 w-4" />
                     Supprimer
                   </button>
                 </div>
@@ -179,62 +195,75 @@ export default function PayoutsGrid({
             ))}
           </div>
 
-          {/* Desktop view */}
-          <div className="hidden md:block">
-            <div className="overflow-x-auto rounded-[22px] border border-zinc-900/70 bg-zinc-950/15">
+          {/* DESKTOP VIEW */}
+          <div className="hidden md:block overflow-hidden rounded-xl border border-white/[0.06] bg-black/20">
+            <div className="overflow-x-auto">
               <table className="w-full table-auto border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-zinc-900/80 bg-zinc-950/40 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                    <th className="px-5 py-4 w-[160px]">
+                  <tr className="border-b border-white/[0.06] bg-[#121318]/90 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                    <th className="px-4 py-3 w-[150px]">
                       <button
                         onClick={() => handleSort('payout_date')}
-                        className="flex items-center gap-1.5 transition hover:text-zinc-200"
+                        className="flex items-center gap-1 transition hover:text-white"
                       >
-                        Date <ArrowUpDown className="h-3 w-3 text-zinc-600" />
+                        Date <ArrowUpDown className="h-3 w-3 text-zinc-500" />
                       </button>
                     </th>
-                    <th className="px-5 py-4 w-[200px]">
+                    {selectedTraderId === 'all' && (
+                      <th className="px-4 py-3 w-[140px]">Profil</th>
+                    )}
+                    <th className="px-4 py-3 w-[160px] text-right">
                       <button
                         onClick={() => handleSort('amount')}
-                        className="flex items-center gap-1.5 transition hover:text-zinc-200"
+                        className="ml-auto flex items-center justify-end gap-1 transition hover:text-white"
                       >
-                        Montant <ArrowUpDown className="h-3 w-3 text-zinc-600" />
+                        Montant <ArrowUpDown className="h-3 w-3 text-zinc-500" />
                       </button>
                     </th>
-                    <th className="px-5 py-4">Notes</th>
-                    <th className="px-5 py-4 text-right w-[120px]">Actions</th>
+                    <th className="px-4 py-3">Notes &amp; Détails</th>
+                    <th className="px-4 py-3 text-right w-[100px]">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-zinc-900/40 text-[12px] text-zinc-300 font-mono-numbers">
+                <tbody className="divide-y divide-white/[0.04] text-xs">
                   {processedPayouts.map((payout) => (
-                    <tr key={payout.id} className="group transition hover:bg-zinc-900/15">
-                      <td className="px-5 py-4 font-sans text-zinc-400">
+                    <tr key={payout.id} className="group transition hover:bg-white/[0.03]">
+                      <td className="px-4 py-3 font-mono text-zinc-400">
                         {formatDate(payout.payout_date)}
                       </td>
-                      <td className="px-5 py-4 font-semibold text-amber-300">
-                        {formatCurrency(payout.amount)}
+                      {selectedTraderId === 'all' && (
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <User className="h-3 w-3 text-zinc-500" />
+                            <span className="text-zinc-300 font-medium">
+                              {traderMap.get(payout.trader_id) || 'Profil'}
+                            </span>
+                          </div>
+                        </td>
+                      )}
+                      <td className="px-4 py-3 text-right font-mono font-bold text-emerald-400">
+                        +{formatCurrency(payout.amount)}
                       </td>
-                      <td className="px-5 py-4 font-sans text-zinc-300">
-                        <div className="max-w-[500px] break-words whitespace-normal leading-5">
-                          {payout.notes || '—'}
+                      <td className="px-4 py-3 text-zinc-300">
+                        <div className="max-w-[480px] truncate leading-5" title={payout.notes || ''}>
+                          {payout.notes || '–'}
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-right font-sans">
-                        <div className="flex items-center justify-end gap-1.5 opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100">
+                      <td className="px-4 py-3 text-right font-sans">
+                        <div className="flex items-center justify-end gap-1 opacity-0 transition group-hover:opacity-100">
                           <button
                             onClick={() => onEditPayout(payout)}
-                            className="rounded-xl p-2 text-zinc-500 transition hover:bg-zinc-900/70 hover:text-zinc-100"
+                            className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
                             title="Modifier"
                           >
-                            <Edit3 className="h-4 w-4" />
+                            <Edit3 className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => onDeletePayout(payout.id)}
-                            className="rounded-xl p-2 text-zinc-500 transition hover:bg-zinc-900/70 hover:text-rose-300"
+                            className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-rose-950/40 hover:text-rose-400"
                             title="Supprimer"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       </td>

@@ -289,6 +289,8 @@ export default function DashboardView({
         {activeTab === 'payouts' && (
           <PayoutsGrid
             payouts={filteredPayouts}
+            traders={traders}
+            selectedTraderId={selectedTraderId}
             onEditPayout={handleTriggerEditPayout}
             onDeletePayout={handleDeletePayout}
             onAddPayout={handleTriggerAddPayout}

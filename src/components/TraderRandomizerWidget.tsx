@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Trader } from '@/lib/db';
-import { Dices, Sparkles, Check, RotateCcw, ArrowRight } from 'lucide-react';
+import { Dices, Sparkles, Check, RotateCcw, ArrowRight, Trash2 } from 'lucide-react';
 
 interface TraderRandomizerWidgetProps {
   traders: Trader[];
@@ -109,6 +109,17 @@ export default function TraderRandomizerWidget({
     }
   };
 
+  const handleFlushHistory = () => {
+    setHistory([]);
+    lastChosenIdRef.current = null;
+    try {
+      localStorage.removeItem('random_trader_history');
+      localStorage.removeItem('last_random_trader_id');
+    } catch {
+      // ignore
+    }
+  };
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/70 p-3 sm:p-4 backdrop-blur-md shadow-lg shadow-black/20">
       {/* Subtle ambient glow */}
@@ -206,23 +217,34 @@ export default function TraderRandomizerWidget({
       </div>
 
       {/* Mini history trail */}
-      {history.length > 1 && (
-        <div className="mt-2.5 flex items-center gap-1.5 border-t border-zinc-900 pt-2 text-[11px] text-zinc-400">
-          <span className="font-medium text-zinc-400">Derniers tirages :</span>
-          <div className="flex flex-wrap items-center gap-1">
-            {history.map((name, idx) => (
-              <span
-                key={`${name}-${idx}`}
-                className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
-                  idx === 0
-                    ? 'bg-violet-950/60 text-violet-300 border border-violet-800/40'
-                    : 'bg-zinc-900 text-zinc-400'
-                }`}
-              >
-                {name}
-              </span>
-            ))}
+      {history.length > 0 && (
+        <div className="mt-2.5 flex items-center justify-between border-t border-zinc-900 pt-2 text-[11px] text-zinc-400">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="font-medium text-zinc-400">Derniers tirages :</span>
+            <div className="flex flex-wrap items-center gap-1">
+              {history.map((name, idx) => (
+                <span
+                  key={`${name}-${idx}`}
+                  className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
+                    idx === 0
+                      ? 'bg-violet-950/60 text-violet-300 border border-violet-800/40'
+                      : 'bg-zinc-900 text-zinc-400'
+                  }`}
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
           </div>
+
+          <button
+            onClick={handleFlushHistory}
+            className="inline-flex items-center gap-1 rounded-lg border border-zinc-800/80 bg-zinc-900/60 px-2 py-0.5 text-[10px] font-medium text-zinc-400 transition hover:border-rose-900/50 hover:bg-rose-950/20 hover:text-rose-300"
+            title="Vider l'historique et réinitialiser l'anti-doublon"
+          >
+            <Trash2 className="h-3 w-3" />
+            <span>Vider</span>
+          </button>
         </div>
       )}
     </div>

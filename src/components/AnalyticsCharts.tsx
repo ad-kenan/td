@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -22,6 +23,15 @@ interface AnalyticsChartsProps {
 }
 
 export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = !mounted || resolvedTheme === 'dark';
+
   // 1. Calculate challenge totals and sort chronologically
   const sortedData = useMemo(() => {
     return [...challenges]
@@ -96,25 +106,35 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
   const netPnL = sortedData.reduce((sum, item) => sum + item.pnl, 0);
   const profitableAccounts = sortedData.filter((item) => item.pnl > 0).length;
 
+  const chartTheme = {
+    grid: isDark ? '#1f2028' : '#e2e8f0',
+    refLine: isDark ? '#3f3f46' : '#cbd5e1',
+    axisText: isDark ? '#71717a' : '#64748b',
+    tooltipBg: isDark ? '#121318' : '#ffffff',
+    tooltipBorder: isDark ? '#27272a' : '#e2e8f0',
+    tooltipColor: isDark ? '#fafafa' : '#0f172a',
+    tooltipShadow: isDark ? '0 10px 25px -5px rgba(0, 0, 0, 0.7)' : '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+  };
+
   if (challenges.length === 0) {
     return (
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-white/[0.05] bg-[#0d0e12] p-6 text-center">
-          <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-zinc-500">
+        <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-white p-6 text-center shadow-xs transition-colors dark:border-white/[0.05] dark:bg-[#0d0e12]">
+          <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-slate-400 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-500">
             <LineChart className="h-5 w-5" />
           </div>
-          <h4 className="text-sm font-semibold text-zinc-200">Courbe d&apos;équité cumulative</h4>
-          <p className="mt-1 max-w-[260px] text-xs leading-5 text-zinc-500">
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Courbe d&apos;équité cumulative</h4>
+          <p className="mt-1 max-w-[260px] text-xs leading-5 text-slate-500 dark:text-zinc-500">
             Enregistrez vos challenges pour visualiser l&apos;évolution de votre capital cumulé.
           </p>
         </div>
 
-        <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-white/[0.05] bg-[#0d0e12] p-6 text-center">
-          <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-zinc-500">
+        <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-white p-6 text-center shadow-xs transition-colors dark:border-white/[0.05] dark:bg-[#0d0e12]">
+          <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-slate-400 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-500">
             <BarChart3 className="h-5 w-5" />
           </div>
-          <h4 className="text-sm font-semibold text-zinc-200">Performance par compte</h4>
-          <p className="mt-1 max-w-[260px] text-xs leading-5 text-zinc-500">
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">Performance par compte</h4>
+          <p className="mt-1 max-w-[260px] text-xs leading-5 text-slate-500 dark:text-zinc-500">
             La distribution de vos gains et pertes par challenge apparaîtra ici.
           </p>
         </div>
@@ -125,20 +145,20 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {/* 1. COURBE D'ÉQUITÉ CUMULATIVE */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5 transition hover:border-white/10">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10 sm:p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+            <h4 className="text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-zinc-100">
               Courbe d&apos;équité cumulative
             </h4>
-            <p className="text-[11px] text-zinc-400">Évolution chronologique de votre PnL net cumulé.</p>
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400">Évolution chronologique de votre PnL net cumulé.</p>
           </div>
 
           <div
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-mono font-bold ${
               netPnL >= 0
-                ? 'border border-emerald-500/20 bg-emerald-950/40 text-emerald-300'
-                : 'border border-rose-500/20 bg-rose-950/40 text-rose-300'
+                ? 'border border-emerald-500/20 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                : 'border border-rose-500/20 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
             }`}
           >
             {netPnL >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
@@ -159,11 +179,11 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
                   <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2028" vertical={false} />
-              <ReferenceLine y={0} stroke="#3f3f46" strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
+              <ReferenceLine y={0} stroke={chartTheme.refLine} strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
-                stroke="#52525b"
+                stroke={chartTheme.axisText}
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
@@ -172,7 +192,7 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
                 tickFormatter={formatDateTick}
               />
               <YAxis
-                stroke="#52525b"
+                stroke={chartTheme.axisText}
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
@@ -180,12 +200,12 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#121318',
-                  borderColor: '#27272a',
+                  backgroundColor: chartTheme.tooltipBg,
+                  borderColor: chartTheme.tooltipBorder,
                   borderRadius: '12px',
-                  color: '#fafafa',
+                  color: chartTheme.tooltipColor,
                   fontSize: '12px',
-                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.7)',
+                  boxShadow: chartTheme.tooltipShadow,
                 }}
                 formatter={(value: unknown) => [formatVal(Number(value || 0)), 'Équité Cumulée']}
                 labelFormatter={(label) => `Date d'achat : ${formatDateLabel(String(label))}`}
@@ -204,17 +224,17 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
       </div>
 
       {/* 2. PERFORMANCE PAR COMPTE */}
-      <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5 transition hover:border-white/10">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10 sm:p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+            <h4 className="text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-zinc-100">
               Performance par compte
             </h4>
-            <p className="text-[11px] text-zinc-400">Résultat net final individuel par challenge.</p>
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400">Résultat net final individuel par challenge.</p>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-xs font-semibold text-zinc-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
             <span>{profitableAccounts}/{sortedData.length} rentables</span>
           </div>
         </div>
@@ -222,11 +242,11 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
         <div className="h-60 w-full font-mono lg:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={sortedData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2028" vertical={false} />
-              <ReferenceLine y={0} stroke="#3f3f46" strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} vertical={false} />
+              <ReferenceLine y={0} stroke={chartTheme.refLine} strokeDasharray="3 3" />
               <XAxis
                 dataKey="name"
-                stroke="#52525b"
+                stroke={chartTheme.axisText}
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
@@ -235,7 +255,7 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
                 tickFormatter={(value) => String(value).slice(-6)}
               />
               <YAxis
-                stroke="#52525b"
+                stroke={chartTheme.axisText}
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
@@ -243,12 +263,12 @@ export default function AnalyticsCharts({ challenges }: AnalyticsChartsProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#121318',
-                  borderColor: '#27272a',
+                  backgroundColor: chartTheme.tooltipBg,
+                  borderColor: chartTheme.tooltipBorder,
                   borderRadius: '12px',
-                  color: '#fafafa',
+                  color: chartTheme.tooltipColor,
                   fontSize: '12px',
-                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.7)',
+                  boxShadow: chartTheme.tooltipShadow,
                 }}
                 formatter={(value: unknown) => [formatVal(Number(value || 0)), 'PnL Net']}
                 labelFormatter={(label, items) => {

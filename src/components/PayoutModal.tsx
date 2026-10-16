@@ -44,9 +44,9 @@ export default function PayoutModal({
   const isCreateBlocked = !payout && traderId === 'all';
 
   const inputClass =
-    'w-full rounded-xl border border-white/10 bg-black/50 px-3.5 py-2.5 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30';
-  const labelClass = 'mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-400';
-  const sectionClass = 'rounded-xl border border-white/[0.06] bg-black/30 p-4';
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 dark:border-white/10 dark:bg-black/50 dark:text-zinc-100 dark:placeholder:text-zinc-600 dark:focus:border-violet-500/60 dark:focus:ring-violet-500/30';
+  const labelClass = 'mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400';
+  const sectionClass = 'rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/[0.06] dark:bg-black/30';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,28 +90,28 @@ export default function PayoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md transition-colors animate-fade-in dark:bg-black/80"
       onClick={onClose}
     >
       <div className="flex min-h-full items-stretch justify-center p-0 sm:items-center sm:p-4">
         <div
-          className="relative flex h-screen w-full max-w-lg flex-col rounded-2xl border border-white/10 bg-[#121318] shadow-2xl shadow-black sm:h-auto sm:max-h-[90vh]"
+          className="relative flex h-screen w-full max-w-lg flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl transition-colors dark:border-white/10 dark:bg-[#121318] sm:h-auto sm:max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-white/[0.06]">
             <div>
-              <h3 className="text-sm font-semibold tracking-tight text-zinc-100 sm:text-base">
+              <h3 className="text-sm font-semibold tracking-tight text-slate-900 sm:text-base dark:text-zinc-100">
                 {payout ? 'Modifier le retrait' : 'Ajouter un retrait'}
               </h3>
-              <p className="mt-0.5 text-xs text-zinc-400">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
                 Enregistrez un retrait de gains pour ajuster votre trésorerie.
               </p>
             </div>
 
             <button
               onClick={onClose}
-              className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
@@ -175,11 +175,11 @@ export default function PayoutModal({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-2 border-t border-white/[0.06] p-4">
+            <div className="flex items-center justify-end gap-2 border-t border-slate-200 p-4 dark:border-white/[0.06]">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl border border-white/10 px-3.5 py-2 text-xs font-medium text-zinc-400 transition hover:border-white/20 hover:text-white"
+                className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:text-zinc-400 dark:hover:border-white/20 dark:hover:text-white"
               >
                 Annuler
               </button>

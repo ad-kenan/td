@@ -15,6 +15,7 @@ import {
   UserRound,
   UsersRound,
 } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 import type {
   CreateTripCreditInput,
   CreateTripExpenseInput,
@@ -408,32 +409,44 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
   };
 
   const inputClass =
-    'h-11 w-full rounded-2xl border border-zinc-800 bg-zinc-950/70 px-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-800';
+    'h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-100 dark:placeholder:text-zinc-600 dark:focus:border-zinc-700 dark:focus:ring-zinc-800';
   const areaClass =
-    'w-full rounded-2xl border border-zinc-800 bg-zinc-950/70 px-3 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-800';
-  const labelClass = 'mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500';
+    'w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-300 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-100 dark:placeholder:text-zinc-600 dark:focus:border-zinc-700 dark:focus:ring-zinc-800';
+  const labelClass = 'mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-500';
 
   return (
-    <main className="min-h-screen bg-[#050506] px-3 py-4 text-zinc-100 premium-glow-bg sm:px-5 lg:px-8">
-      <div className="saas-grid" />
+    <main className="min-h-screen bg-slate-50 px-3 py-4 text-slate-900 transition-colors dark:bg-[#050506] dark:text-zinc-100 premium-glow-bg sm:px-5 lg:px-8">
+      <div className="saas-grid opacity-30 dark:opacity-100" />
       <div className="relative z-10 mx-auto flex w-full max-w-[1680px] flex-col gap-4">
-        <header className="glass-panel rounded-[24px] border border-zinc-800/70 p-4 sm:p-6">
+        <header className="glass-panel rounded-[24px] border border-slate-200/80 bg-white/80 p-4 shadow-xs backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-900/60 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <Link
-                href="/"
-                className="mb-4 inline-flex h-10 items-center gap-2 rounded-2xl border border-zinc-800 bg-zinc-950/65 px-3 text-sm font-semibold text-zinc-300 transition hover:border-zinc-700 hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Dashboard
-              </Link>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                Marseille trip calculator
-              </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-50 sm:text-3xl">
-                Voyage
-              </h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
+            <div className="flex-1">
+              <div className="mb-4 flex items-center justify-between">
+                <Link
+                  href="/"
+                  className="inline-flex h-10 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-xs transition hover:border-slate-300 hover:text-slate-900 dark:border-zinc-800 dark:bg-zinc-950/65 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Dashboard
+                </Link>
+                <div className="lg:hidden">
+                  <ThemeToggle />
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-zinc-500">
+                    Marseille trip calculator
+                  </p>
+                  <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 sm:text-3xl">
+                    Voyage
+                  </h1>
+                </div>
+                <div className="hidden lg:block self-start">
+                  <ThemeToggle />
+                </div>
+              </div>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-zinc-400">
                 Ajoute les participants, les depenses payees sur place et les credits issus des 50% de benefice ajuste. Le calculateur sort ensuite qui doit quoi, avec les credits appliques aux montants dus a la personne marquee comme Moi.
               </p>
             </div>
@@ -447,12 +460,12 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
               ].map((metric) => {
                 const Icon = metric.icon;
                 return (
-                  <div key={metric.label} className="rounded-[20px] border border-zinc-800/70 bg-zinc-950/45 p-3">
-                    <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-400">
+                  <div key={metric.label} className="rounded-[20px] border border-slate-200/80 bg-white/70 p-3 shadow-xs dark:border-zinc-800/70 dark:bg-zinc-950/45">
+                    <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 text-slate-600 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
                       <Icon className="h-4 w-4" />
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-500">{metric.label}</p>
-                    <p className="mt-1 font-mono-numbers text-sm font-semibold text-zinc-100">{metric.value}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-500">{metric.label}</p>
+                    <p className="mt-1 font-mono-numbers text-sm font-semibold text-slate-900 dark:text-zinc-100">{metric.value}</p>
                   </div>
                 );
               })}
@@ -461,21 +474,21 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
         </header>
 
         {errorMsg && (
-          <div className="rounded-2xl border border-rose-900/60 bg-rose-950/25 px-4 py-3 text-sm text-rose-200">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/25 dark:text-rose-200">
             {errorMsg}
           </div>
         )}
 
         <section className="grid gap-4 xl:grid-cols-[420px_minmax(0,1fr)]">
           <div className="space-y-4">
-            <form onSubmit={handleAddParticipant} className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
+            <form onSubmit={handleAddParticipant} className="glass-card rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-xs backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-900/40 sm:p-5">
               <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/70 text-zinc-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-slate-700 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300">
                   <UsersRound className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-zinc-100">Participants</h2>
-                  <p className="text-sm text-zinc-500">Trois, quatre, cinq: tu choisis par depense.</p>
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">Participants</h2>
+                  <p className="text-sm text-slate-500 dark:text-zinc-500">Trois, quatre, cinq: tu choisis par depense.</p>
                 </div>
               </div>
 
@@ -487,12 +500,12 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
                 className={inputClass}
               />
 
-              <label className="mt-3 flex items-center gap-2 text-sm text-zinc-300">
+              <label className="mt-3 flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300">
                 <input
                   type="checkbox"
                   checked={participantIsMe}
                   onChange={(event) => setParticipantIsMe(event.target.checked)}
-                  className="h-4 w-4 accent-zinc-100"
+                  className="h-4 w-4 accent-slate-900 dark:accent-zinc-100"
                 />
                 C&apos;est moi
               </label>
@@ -500,7 +513,7 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 text-sm font-semibold text-white shadow-xs transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white"
               >
                 <Plus className="h-4 w-4" />
                 Ajouter
@@ -508,25 +521,25 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
 
               <div className="mt-5 space-y-2">
                 {participants.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-zinc-800 px-4 py-6 text-center text-sm text-zinc-500">
+                  <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 dark:border-zinc-800 dark:text-zinc-500">
                     Ajoute les personnes du voyage pour commencer.
                   </div>
                 ) : (
                   participants.map((participant) => (
                     <div
                       key={participant.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-800/70 bg-zinc-950/45 px-3 py-2"
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 dark:border-zinc-800/70 dark:bg-zinc-950/45"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-zinc-100">{participant.name}</p>
-                        <p className="text-xs text-zinc-500">{participant.is_me ? 'Moi - les credits peuvent compenser les dettes envers toi' : 'Participant'}</p>
+                        <p className="truncate text-sm font-semibold text-slate-900 dark:text-zinc-100">{participant.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-500">{participant.is_me ? 'Moi - les credits peuvent compenser les dettes envers toi' : 'Participant'}</p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         {!participant.is_me && (
                           <button
                             type="button"
                             onClick={() => handleSetMe(participant.id)}
-                            className="rounded-xl border border-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100"
+                            className="rounded-xl border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 shadow-xs transition hover:border-slate-300 hover:text-slate-900 dark:border-zinc-800 dark:bg-transparent dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100"
                           >
                             Moi
                           </button>
@@ -534,7 +547,7 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
                         <button
                           type="button"
                           onClick={() => handleDeleteParticipant(participant.id)}
-                          className="rounded-xl p-2 text-zinc-500 transition hover:bg-rose-950/20 hover:text-rose-300"
+                          className="rounded-xl p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-500 dark:hover:bg-rose-950/20 dark:hover:text-rose-300"
                           title="Supprimer"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -546,14 +559,14 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
               </div>
             </form>
 
-            <form onSubmit={handleAddCredit} className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
+            <form onSubmit={handleAddCredit} className="glass-card rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-xs backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-900/40 sm:p-5">
               <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-900/50 bg-emerald-950/20 text-emerald-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
                   <CircleDollarSign className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-zinc-100">Credits 50%</h2>
-                  <p className="text-sm text-zinc-500">Argent disponible depuis le benefice ajuste.</p>
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">Credits 50%</h2>
+                  <p className="text-sm text-slate-500 dark:text-zinc-500">Argent disponible depuis le benefice ajuste.</p>
                 </div>
               </div>
 
@@ -616,7 +629,7 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
               <button
                 type="submit"
                 disabled={isSubmitting || participants.length === 0}
-                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-300 px-4 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-xs transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:bg-emerald-300 dark:text-emerald-950 dark:hover:bg-emerald-200 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500"
               >
                 <Plus className="h-4 w-4" />
                 Ajouter un credit
@@ -625,21 +638,21 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
           </div>
 
           <div className="space-y-4">
-            <form onSubmit={handleAddExpense} className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
+            <form onSubmit={handleAddExpense} className="glass-card rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-xs backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-900/40 sm:p-5">
               <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-950/70 text-zinc-300">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-slate-700 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300">
                     <ReceiptText className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-zinc-100">Nouvelle depense</h2>
-                    <p className="text-sm text-zinc-500">Choisis qui a paye et entre qui participe au split.</p>
+                    <h2 className="text-base font-semibold text-slate-900 dark:text-zinc-100">Nouvelle depense</h2>
+                    <p className="text-sm text-slate-500 dark:text-zinc-500">Choisis qui a paye et entre qui participe au split.</p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setExpenseSplitIds(participants.map((participant) => participant.id))}
-                  className="inline-flex h-10 items-center justify-center rounded-2xl border border-zinc-800 px-3 text-sm font-semibold text-zinc-300 transition hover:border-zinc-700 hover:text-white"
+                  className="inline-flex h-10 items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-xs transition hover:border-slate-300 hover:text-slate-900 dark:border-zinc-800 dark:bg-transparent dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:text-white"
                 >
                   Diviser entre tous
                 </button>
@@ -695,7 +708,7 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
                   <label className={labelClass}>Split entre</label>
                   <div className="flex flex-wrap gap-2">
                     {participants.length === 0 ? (
-                      <span className="rounded-2xl border border-dashed border-zinc-800 px-4 py-2 text-sm text-zinc-500">
+                      <span className="rounded-2xl border border-dashed border-slate-200 px-4 py-2 text-sm text-slate-500 dark:border-zinc-800 dark:text-zinc-500">
                         Ajoute des participants d&apos;abord.
                       </span>
                     ) : (
@@ -708,8 +721,8 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
                             onClick={() => toggleSplitParticipant(participant.id)}
                             className={`inline-flex h-10 items-center gap-2 rounded-2xl border px-3 text-sm font-semibold transition ${
                               selected
-                                ? 'border-zinc-100 bg-zinc-100 text-zinc-950'
-                                : 'border-zinc-800 bg-zinc-950/50 text-zinc-400 hover:border-zinc-700 hover:text-zinc-100'
+                                ? 'border-slate-900 bg-slate-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900 dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:text-zinc-100'
                             }`}
                           >
                             {selected && <Check className="h-4 w-4" />}
@@ -734,7 +747,7 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
               <button
                 type="submit"
                 disabled={isSubmitting || participants.length === 0}
-                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
+                className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 text-sm font-semibold text-white shadow-xs transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white dark:disabled:bg-zinc-800 dark:disabled:text-zinc-500"
               >
                 <Plus className="h-4 w-4" />
                 Ajouter la depense
@@ -742,8 +755,8 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
             </form>
 
             <section className="grid gap-4 lg:grid-cols-2">
-              <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-zinc-100">Qui doit quoi</h2>
+              <div className="glass-card rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-xs backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-900/40 sm:p-5">
+                <h2 className="mb-4 text-base font-semibold text-slate-900 dark:text-zinc-100">Qui doit quoi</h2>
                 {participants.length === 0 ? (
                   <EmptyBlock text="Ajoute les participants pour voir les remboursements." />
                 ) : ledger.transfers.length === 0 ? (
@@ -756,23 +769,23 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
                       if (!from || !to) return null;
 
                       return (
-                        <div key={`${transfer.fromId}-${transfer.toId}-${transfer.rawAmount}`} className="rounded-2xl border border-zinc-800/70 bg-zinc-950/45 p-3">
+                        <div key={`${transfer.fromId}-${transfer.toId}-${transfer.rawAmount}`} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-zinc-800/70 dark:bg-zinc-950/45">
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                              <p className="text-sm font-semibold text-zinc-100">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
                                 {from.name} doit {formatCurrency(transfer.amountDue)} a {to.name}
                               </p>
-                              <p className="mt-1 text-xs leading-5 text-zinc-500">
+                              <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-500">
                                 Dette brute: {formatCurrency(transfer.rawAmount)}
                                 {transfer.creditApplied > 0 && ` · credit utilise: ${formatCurrency(transfer.creditApplied)}`}
                               </p>
                             </div>
                             {transfer.amountDue <= 0.005 ? (
-                              <span className="self-start rounded-full border border-emerald-900/60 bg-emerald-950/25 px-3 py-1 text-xs font-semibold text-emerald-300">
+                              <span className="self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-300">
                                 couvert
                               </span>
                             ) : (
-                              <span className="self-start rounded-full border border-amber-900/60 bg-amber-950/25 px-3 py-1 text-xs font-semibold text-amber-300">
+                              <span className="self-start rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-300">
                                 a payer
                               </span>
                             )}
@@ -784,28 +797,28 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
                 )}
               </div>
 
-              <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
-                <h2 className="mb-4 text-base font-semibold text-zinc-100">Soldes par personne</h2>
+              <div className="glass-card rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-xs backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-900/40 sm:p-5">
+                <h2 className="mb-4 text-base font-semibold text-slate-900 dark:text-zinc-100">Soldes par personne</h2>
                 {ledger.summaries.length === 0 ? (
                   <EmptyBlock text="Aucun solde a afficher." />
                 ) : (
                   <div className="space-y-3">
                     {ledger.summaries.map((summary) => (
-                      <div key={summary.participant.id} className="rounded-2xl border border-zinc-800/70 bg-zinc-950/45 p-3">
+                      <div key={summary.participant.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-zinc-800/70 dark:bg-zinc-950/45">
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <div className="flex min-w-0 items-center gap-2">
-                            <UserRound className="h-4 w-4 shrink-0 text-zinc-500" />
-                            <p className="truncate text-sm font-semibold text-zinc-100">
+                            <UserRound className="h-4 w-4 shrink-0 text-slate-400 dark:text-zinc-500" />
+                            <p className="truncate text-sm font-semibold text-slate-900 dark:text-zinc-100">
                               {summary.participant.name}
                               {summary.participant.is_me ? ' · Moi' : ''}
                             </p>
                           </div>
-                          <span className={`font-mono-numbers text-sm font-semibold ${summary.rawBalance >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                          <span className={`font-mono-numbers text-sm font-semibold ${summary.rawBalance >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
                             {summary.rawBalance >= 0 ? '+' : ''}
                             {formatCurrency(summary.rawBalance)}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs text-zinc-500 sm:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-zinc-500 sm:grid-cols-4">
                           <MiniStat label="Paye" value={formatCurrency(summary.paid)} />
                           <MiniStat label="Part" value={formatCurrency(summary.share)} />
                           <MiniStat label="Credit" value={formatCurrency(summary.credits)} />
@@ -867,16 +880,16 @@ export default function TripCalculatorView({ initialData }: TripCalculatorViewPr
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-800/60 bg-zinc-950/60 px-2.5 py-2">
-      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-600">{label}</p>
-      <p className="mt-1 font-mono-numbers text-[11px] font-semibold text-zinc-300">{value}</p>
+    <div className="rounded-xl border border-slate-200/80 bg-white px-2.5 py-2 shadow-2xs dark:border-zinc-800/60 dark:bg-zinc-950/60">
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-zinc-600">{label}</p>
+      <p className="mt-1 font-mono-numbers text-[11px] font-semibold text-slate-800 dark:text-zinc-300">{value}</p>
     </div>
   );
 }
 
 function EmptyBlock({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-zinc-800 px-4 py-8 text-center text-sm text-zinc-500">
+    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500 dark:border-zinc-800 dark:text-zinc-500">
       {text}
     </div>
   );
@@ -884,8 +897,8 @@ function EmptyBlock({ text }: { text: string }) {
 
 function HistoryCard({ title, emptyText, items }: { title: string; emptyText: string; items: ReactNode[] }) {
   return (
-    <div className="glass-card rounded-[24px] border border-zinc-800/70 p-4 sm:p-5">
-      <h2 className="mb-4 text-base font-semibold text-zinc-100">{title}</h2>
+    <div className="glass-card rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-xs backdrop-blur-md dark:border-zinc-800/70 dark:bg-zinc-900/40 sm:p-5">
+      <h2 className="mb-4 text-base font-semibold text-slate-900 dark:text-zinc-100">{title}</h2>
       {items.length === 0 ? <EmptyBlock text={emptyText} /> : <div className="space-y-2">{items}</div>}
     </div>
   );
@@ -903,17 +916,17 @@ function HistoryRow({
   onDelete: () => void;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-2xl border border-zinc-800/70 bg-zinc-950/45 px-3 py-3">
+    <div className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-3 py-3 dark:border-zinc-800/70 dark:bg-zinc-950/45">
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-zinc-100">{title}</p>
-        <p className="mt-1 text-xs leading-5 text-zinc-500">{detail}</p>
+        <p className="truncate text-sm font-semibold text-slate-900 dark:text-zinc-100">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-zinc-500">{detail}</p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <span className="font-mono-numbers text-sm font-semibold text-zinc-200">{amount}</span>
+        <span className="font-mono-numbers text-sm font-semibold text-slate-800 dark:text-zinc-200">{amount}</span>
         <button
           type="button"
           onClick={onDelete}
-          className="rounded-xl p-2 text-zinc-500 transition hover:bg-rose-950/20 hover:text-rose-300"
+          className="rounded-xl p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-500 dark:hover:bg-rose-950/20 dark:hover:text-rose-300"
           title="Supprimer"
         >
           <Trash2 className="h-4 w-4" />

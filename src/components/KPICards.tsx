@@ -141,7 +141,7 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
   return (
     <div className="flex flex-col gap-3">
       {/* NIVEAU 1 — CARTE HERO PILIER : PnL NET GLOBAL CONSOLIDÉ */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0f1015] p-5 shadow-xl sm:p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs transition-colors dark:border-white/[0.08] dark:bg-[#0f1015] sm:p-6">
         {/* Subtle top edge glow */}
         <div
           className={`pointer-events-none absolute inset-x-0 top-0 h-[2px] ${
@@ -155,14 +155,14 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
           {/* Main Net PnL number */}
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-zinc-400">
                 PnL Net Consolidé
               </span>
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                   netPnL >= 0
-                    ? 'border border-emerald-500/20 bg-emerald-950/40 text-emerald-300'
-                    : 'border border-rose-500/20 bg-rose-950/40 text-rose-300'
+                    ? 'border border-emerald-500/20 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'border border-rose-500/20 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
                 }`}
               >
                 {netPnL >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -173,7 +173,7 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
             <div className="mt-1 flex items-baseline gap-3">
               <h1
                 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold font-mono tracking-tight ${
-                  netPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  netPnL >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
                 {formatCurrency(netPnL, true)}
@@ -182,46 +182,46 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
           </div>
 
           {/* Integrated Sub-metrics row: Bénéfices Bruts | Bénéfices Ajustés | Pertes */}
-          <div className="flex flex-wrap items-center gap-3 sm:gap-6 border-t border-white/[0.06] pt-3 lg:border-t-0 lg:pt-0">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 border-t border-slate-200 pt-3 lg:border-t-0 lg:pt-0 dark:border-white/[0.06]">
             {/* Bénéfices bruts */}
             <div className="flex flex-col">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Bénéfices Bruts
               </span>
-              <span className="text-base sm:text-lg font-bold font-mono text-emerald-400">
+              <span className="text-base sm:text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">
                 +{formatCurrency(totalBenefices)}
               </span>
             </div>
 
-            <div className="hidden h-8 w-px bg-white/[0.08] sm:block" />
+            <div className="hidden h-8 w-px bg-slate-200 sm:block dark:bg-white/[0.08]" />
 
             {/* Bénéfices ajustés */}
             <div className="flex flex-col">
               <div className="flex items-center gap-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                   Bénéfices Ajustés
                 </span>
                 <span title="Bénéfices après déduction des pertes avec phases positives et des payouts">
-                  <HelpCircle className="h-2.5 w-2.5 text-zinc-500" />
+                  <HelpCircle className="h-2.5 w-2.5 text-slate-400 dark:text-zinc-500" />
                 </span>
               </div>
               <span
                 className={`text-base sm:text-lg font-bold font-mono ${
-                  adjustedBenefices >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  adjustedBenefices >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
                 {formatCurrency(adjustedBenefices, true)}
               </span>
             </div>
 
-            <div className="hidden h-8 w-px bg-white/[0.08] sm:block" />
+            <div className="hidden h-8 w-px bg-slate-200 sm:block dark:bg-white/[0.08]" />
 
             {/* Pertes */}
             <div className="flex flex-col">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Pertes Totales
               </span>
-              <span className="text-base sm:text-lg font-bold font-mono text-rose-400">
+              <span className="text-base sm:text-lg font-bold font-mono text-rose-600 dark:text-rose-400">
                 {formatCurrency(totalPertes)}
               </span>
             </div>
@@ -232,69 +232,69 @@ export default function KPICards({ challenges, payouts = [] }: KPICardsProps) {
       {/* NIVEAU 2 — 4 CARTES SECONDAIRES HOMOGÈNES */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {/* 1. Investissement Total & Dette */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
+          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
             <span>Investissement Total &amp; Dette</span>
-            <DollarSign className="h-3.5 w-3.5 text-amber-400" />
+            <DollarSign className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
           </div>
-          <div className="mt-2 text-xl sm:text-2xl font-bold font-mono text-zinc-100">
+          <div className="mt-2 text-xl sm:text-2xl font-bold font-mono text-slate-900 dark:text-zinc-100">
             {formatCurrency(totalInvestmentWithDailyDebt)}
           </div>
-          <div className="mt-2 space-y-0.5 border-t border-white/[0.05] pt-2 text-[11px] text-zinc-400">
+          <div className="mt-2 space-y-0.5 border-t border-slate-100 pt-2 text-[11px] text-slate-500 dark:border-white/[0.05] dark:text-zinc-400">
             <div className="flex justify-between">
               <span>Prix des challenges :</span>
-              <span className="font-mono text-zinc-300">{formatCurrency(totalPurchaseCost)}</span>
+              <span className="font-mono text-slate-700 dark:text-zinc-300">{formatCurrency(totalPurchaseCost)}</span>
             </div>
             <div className="flex justify-between">
               <span>Dettes / Pertes jour :</span>
-              <span className="font-mono text-rose-400">{formatCurrency(totalDailyLosses)}</span>
+              <span className="font-mono text-rose-600 dark:text-rose-400">{formatCurrency(totalDailyLosses)}</span>
             </div>
             <div className="flex justify-between">
               <span>Moyenne / challenge :</span>
-              <span className="font-mono text-zinc-300">{formatCurrency(avgCostPerChallenge)}</span>
+              <span className="font-mono text-slate-700 dark:text-zinc-300">{formatCurrency(avgCostPerChallenge)}</span>
             </div>
           </div>
         </div>
 
         {/* 2. Retraits Personnels (Payouts) */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
+          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
             <span>Retraits Personnels</span>
-            <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-400" />
+            <ArrowDownToLine className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
           </div>
-          <div className="mt-2 text-xl sm:text-2xl font-bold font-mono text-emerald-400">
+          <div className="mt-2 text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
             {formatCurrency(totalPayouts)}
           </div>
-          <div className="mt-2 border-t border-white/[0.05] pt-2 text-[11px] text-zinc-400">
+          <div className="mt-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500 dark:border-white/[0.05] dark:text-zinc-400">
             <p>{payouts.length} virement{payouts.length > 1 ? 's' : ''} de payout perçu{payouts.length > 1 ? 's' : ''}</p>
           </div>
         </div>
 
         {/* 3. Dette Globale (Somme coûts Phase 1) */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
+          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
             <span>Dette Cumulée (Achats)</span>
-            <Activity className="h-3.5 w-3.5 text-rose-400" />
+            <Activity className="h-3.5 w-3.5 text-rose-500 dark:text-rose-400" />
           </div>
-          <div className="mt-2 text-xl sm:text-2xl font-bold font-mono text-rose-400">
+          <div className="mt-2 text-xl sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
             -{formatCurrency(totalDebt)}
           </div>
-          <div className="mt-2 border-t border-white/[0.05] pt-2 text-[11px] text-zinc-400">
+          <div className="mt-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500 dark:border-white/[0.05] dark:text-zinc-400">
             <p>Somme des coûts initiaux de Phase 1</p>
           </div>
         </div>
 
         {/* 4. Comptes Actifs */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
-          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
+          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
             <span>Comptes Actifs</span>
-            <Layers className="h-3.5 w-3.5 text-violet-400" />
+            <Layers className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400" />
           </div>
-          <div className="mt-2 flex items-baseline gap-1.5 text-xl sm:text-2xl font-bold font-mono text-zinc-100">
+          <div className="mt-2 flex items-baseline gap-1.5 text-xl sm:text-2xl font-bold font-mono text-slate-900 dark:text-zinc-100">
             <span>{activeAccounts}</span>
-            <span className="text-sm font-normal text-zinc-500">/ {challenges.length}</span>
+            <span className="text-sm font-normal text-slate-400 dark:text-zinc-500">/ {challenges.length}</span>
           </div>
-          <div className="mt-2 border-t border-white/[0.05] pt-2 text-[11px] text-zinc-400">
+          <div className="mt-2 border-t border-slate-100 pt-2 text-[11px] text-slate-500 dark:border-white/[0.05] dark:text-zinc-400">
             <p>Challenges dont le coût n&apos;est pas encore amorti</p>
           </div>
         </div>

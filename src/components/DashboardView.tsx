@@ -187,7 +187,7 @@ export default function DashboardView({
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#09090b] px-3 py-4 text-zinc-100 sm:px-5 sm:py-5 lg:px-6 lg:py-6 xl:px-8">
+    <div className="relative min-h-screen overflow-x-hidden bg-slate-50 px-3 py-4 text-slate-900 transition-colors dark:bg-[#09090b] dark:text-zinc-100 sm:px-5 sm:py-5 lg:px-6 lg:py-6 xl:px-8">
       <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-3.5 sm:gap-4 lg:gap-5">
         <DashboardHeader
           traders={traders}
@@ -229,18 +229,20 @@ export default function DashboardView({
         <AnalyticsCharts challenges={filteredChallenges} />
 
         {/* Tabs Bar */}
-        <div className="flex items-center gap-1 self-start rounded-xl border border-white/[0.06] bg-[#111216]/90 p-1 backdrop-blur-md">
+        <div className="flex items-center gap-1 self-start rounded-xl border border-slate-200 bg-slate-100/90 p-1 shadow-xs backdrop-blur-md transition-colors dark:border-white/[0.06] dark:bg-[#111216]/90">
           <button
             onClick={() => setActiveTab('challenges')}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold tracking-tight transition ${
               activeTab === 'challenges'
-                ? 'bg-white/10 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-white text-slate-900 shadow-xs border border-slate-200/90 dark:bg-white/10 dark:text-white dark:border-transparent'
+                : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-transparent dark:hover:text-zinc-200'
             }`}
           >
             Challenges
-            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold ${
-              activeTab === 'challenges' ? 'bg-violet-600/30 text-violet-300' : 'bg-white/[0.05] text-zinc-500'
+            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold transition-colors ${
+              activeTab === 'challenges' 
+                ? 'bg-violet-100 text-violet-700 dark:bg-violet-600/30 dark:text-violet-300' 
+                : 'bg-slate-200/70 text-slate-600 dark:bg-white/[0.05] dark:text-zinc-500'
             }`}>
               {filteredChallenges.length}
             </span>
@@ -249,13 +251,15 @@ export default function DashboardView({
             onClick={() => setActiveTab('payouts')}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold tracking-tight transition ${
               activeTab === 'payouts'
-                ? 'bg-white/10 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-white text-slate-900 shadow-xs border border-slate-200/90 dark:bg-white/10 dark:text-white dark:border-transparent'
+                : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-transparent dark:hover:text-zinc-200'
             }`}
           >
             Retraits
-            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold ${
-              activeTab === 'payouts' ? 'bg-emerald-950/40 text-emerald-300' : 'bg-white/[0.05] text-zinc-500'
+            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold transition-colors ${
+              activeTab === 'payouts' 
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' 
+                : 'bg-slate-200/70 text-slate-600 dark:bg-white/[0.05] dark:text-zinc-500'
             }`}>
               {filteredPayouts.length}
             </span>
@@ -264,13 +268,15 @@ export default function DashboardView({
             onClick={() => setActiveTab('daily')}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold tracking-tight transition ${
               activeTab === 'daily'
-                ? 'bg-white/10 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-white text-slate-900 shadow-xs border border-slate-200/90 dark:bg-white/10 dark:text-white dark:border-transparent'
+                : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-transparent dark:hover:text-zinc-200'
             }`}
           >
             Journalier
-            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold ${
-              activeTab === 'daily' ? 'bg-emerald-950/40 text-emerald-300' : 'bg-white/[0.05] text-zinc-500'
+            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold transition-colors ${
+              activeTab === 'daily' 
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' 
+                : 'bg-slate-200/70 text-slate-600 dark:bg-white/[0.05] dark:text-zinc-500'
             }`}>
               /jour
             </span>
@@ -279,13 +285,15 @@ export default function DashboardView({
             onClick={() => setActiveTab('hedge')}
             className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold tracking-tight transition ${
               activeTab === 'hedge'
-                ? 'bg-white/10 text-white shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-white text-slate-900 shadow-xs border border-slate-200/90 dark:bg-white/10 dark:text-white dark:border-transparent'
+                : 'text-slate-600 hover:bg-white/60 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-transparent dark:hover:text-zinc-200'
             }`}
           >
             Hedge Calculator
-            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold ${
-              activeTab === 'hedge' ? 'bg-violet-600/30 text-violet-300' : 'bg-white/[0.05] text-zinc-500'
+            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold transition-colors ${
+              activeTab === 'hedge' 
+                ? 'bg-violet-100 text-violet-700 dark:bg-violet-600/30 dark:text-violet-300' 
+                : 'bg-slate-200/70 text-slate-600 dark:bg-white/[0.05] dark:text-zinc-500'
             }`}>
               NQ
             </span>

@@ -221,7 +221,7 @@ export default function TraderRandomizerWidget({
   const isCurrentActive = Boolean(chosenTrader && selectedTraderId === chosenTrader.id);
 
   return (
-    <div className="relative z-20 flex min-h-[48px] flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.05] bg-[#111216]/90 px-3.5 py-2 backdrop-blur-xl">
+    <div className="relative z-20 flex min-h-[48px] flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/90 px-3.5 py-2 shadow-xs backdrop-blur-xl transition-colors dark:border-white/[0.05] dark:bg-[#111216]/90">
       {/* GAUCHE : Bouton de tirage + Cadre résultat & activation */}
       <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
         {/* Bouton de tirage compact */}
@@ -236,18 +236,18 @@ export default function TraderRandomizerWidget({
         </button>
 
         {/* Cadre de résultat compact */}
-        <div className="flex h-8 min-w-[130px] items-center gap-2 rounded-xl border border-white/[0.07] bg-black/40 px-3 text-xs">
+        <div className="flex h-8 min-w-[130px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-100/70 px-3 text-xs transition-colors dark:border-white/[0.07] dark:bg-black/40">
           {isRolling ? (
-            <span className="font-mono font-bold text-violet-400 animate-pulse">
+            <span className="font-mono font-bold text-violet-600 dark:text-violet-400 animate-pulse">
               🎲 {displayedTrader?.name}...
             </span>
           ) : chosenTrader ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold uppercase text-zinc-500">Départ :</span>
-              <span className="font-bold text-zinc-100">{chosenTrader.name}</span>
+              <span className="text-[10px] font-bold uppercase text-slate-500 dark:text-zinc-500">Départ :</span>
+              <span className="font-bold text-slate-800 dark:text-zinc-100">{chosenTrader.name}</span>
             </div>
           ) : (
-            <span className="text-zinc-500 text-[11px]">En attente de tirage</span>
+            <span className="text-slate-500 dark:text-zinc-500 text-[11px]">En attente de tirage</span>
           )}
         </div>
 
@@ -258,8 +258,8 @@ export default function TraderRandomizerWidget({
             disabled={isCurrentActive}
             className={`inline-flex h-8 items-center gap-1 rounded-xl px-2.5 text-xs font-medium transition ${
               isCurrentActive
-                ? 'bg-emerald-950/30 text-emerald-400 cursor-default'
-                : 'bg-white/[0.05] text-zinc-300 hover:bg-white/10 hover:text-white'
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 cursor-default'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200/70 hover:text-slate-900 dark:bg-white/[0.05] dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white'
             }`}
             title={`Filtrer le dashboard sur ${chosenTrader.name}`}
           >
@@ -271,7 +271,7 @@ export default function TraderRandomizerWidget({
             ) : (
               <>
                 <span>Commencer avec {chosenTrader.name}</span>
-                <ArrowRight className="h-3 w-3 text-zinc-400" />
+                <ArrowRight className="h-3 w-3 text-slate-400 dark:text-zinc-400" />
               </>
             )}
           </button>
@@ -282,10 +282,10 @@ export default function TraderRandomizerWidget({
       <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
         {/* Micro-badge anti-doublon */}
         <span
-          className="hidden items-center gap-1 rounded-lg bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-zinc-400 lg:inline-flex"
+          className="hidden items-center gap-1 rounded-lg bg-slate-100/80 px-2 py-1 text-[10px] font-medium text-slate-600 dark:bg-white/[0.03] dark:text-zinc-400 lg:inline-flex"
           title="Garantit qu'aucun trader n'est tiré 2 fois consécutivement"
         >
-          <Sparkles className="h-2.5 w-2.5 text-violet-400" />
+          <Sparkles className="h-2.5 w-2.5 text-violet-500 dark:text-violet-400" />
           Anti-doublon actif
         </span>
 
@@ -293,16 +293,16 @@ export default function TraderRandomizerWidget({
         <div className="relative" ref={poolRef}>
           <button
             onClick={() => setIsPoolMenuOpen(!isPoolMenuOpen)}
-            className="flex h-8 items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.02] px-2.5 text-xs font-medium text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+            className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/[0.07] dark:bg-white/[0.02] dark:text-zinc-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
             title="Gérer les traders inclus dans le tirage"
           >
             <span>Pool : {activePool.length} IDs</span>
-            <ChevronDown className={`h-3 w-3 text-zinc-400 transition-transform ${isPoolMenuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-3 w-3 text-slate-400 dark:text-zinc-400 transition-transform ${isPoolMenuOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isPoolMenuOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-52 overflow-hidden rounded-2xl border border-white/10 bg-[#121318] p-2 shadow-2xl backdrop-blur-2xl animate-fade-in z-50">
-              <div className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+            <div className="absolute right-0 top-full mt-1.5 w-52 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl backdrop-blur-2xl animate-fade-in z-50 dark:border-white/10 dark:bg-[#121318]">
+              <div className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">
                 Inclus dans le tirage
               </div>
               <div className="space-y-0.5">
@@ -314,12 +314,12 @@ export default function TraderRandomizerWidget({
                       onClick={() => toggleExclude(t.id)}
                       className={`flex w-full items-center justify-between rounded-xl px-2 py-1 text-xs transition ${
                         !isExcluded
-                          ? 'text-zinc-200 hover:bg-white/[0.06]'
-                          : 'text-zinc-500 line-through hover:bg-white/[0.03]'
+                          ? 'text-slate-700 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-white/[0.06]'
+                          : 'text-slate-400 line-through hover:bg-slate-50 dark:text-zinc-500 dark:hover:bg-white/[0.03]'
                       }`}
                     >
                       <span>{t.name}</span>
-                      <span className={`h-2 w-2 rounded-full ${!isExcluded ? 'bg-emerald-400' : 'bg-zinc-700'}`} />
+                      <span className={`h-2 w-2 rounded-full ${!isExcluded ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-zinc-700'}`} />
                     </button>
                   );
                 })}
@@ -330,12 +330,12 @@ export default function TraderRandomizerWidget({
 
         {/* Tags d'historique + Vider */}
         {history.length > 0 && (
-          <div className="flex items-center gap-1 border-l border-white/[0.06] pl-2">
+          <div className="flex items-center gap-1 border-l border-slate-200 pl-2 dark:border-white/[0.06]">
             <div className="hidden sm:flex items-center gap-1">
               {history.slice(0, 3).map((name, idx) => (
                 <span
                   key={`${name}-${idx}`}
-                  className="rounded-md bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-zinc-400"
+                  className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-600 dark:bg-white/[0.04] dark:text-zinc-400"
                 >
                   {name}
                 </span>
@@ -343,7 +343,7 @@ export default function TraderRandomizerWidget({
             </div>
             <button
               onClick={handleFlushHistory}
-              className="p-1 text-zinc-500 transition hover:text-rose-400"
+              className="p-1 text-slate-400 transition hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400"
               title="Vider l'historique du tirage"
             >
               <Trash2 className="h-3 w-3" />
@@ -354,7 +354,7 @@ export default function TraderRandomizerWidget({
         {/* Toggle son */}
         <button
           onClick={toggleSound}
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-white/[0.05] hover:text-zinc-300"
+          className="flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-zinc-500 dark:hover:bg-white/[0.05] dark:hover:text-zinc-300"
           title={soundEnabled ? 'Désactiver le son' : 'Activer le son'}
         >
           {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}

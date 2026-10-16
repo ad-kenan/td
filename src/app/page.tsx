@@ -11,7 +11,7 @@ export default async function Home() {
   const payouts = await getPayouts();
 
   return (
-    <main className="min-h-screen bg-zinc-950">
+    <main className="min-h-screen bg-slate-50 transition-colors dark:bg-[#09090b]">
       <DashboardView 
         initialTraders={traders} 
         initialChallenges={challenges} 

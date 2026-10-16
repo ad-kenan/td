@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState, Fragment } from 'react';
+import { useMemo, useState, useEffect, Fragment } from 'react';
+import { useTheme } from 'next-themes';
 import { Challenge, Payout, Trader } from '@/lib/db';
 import {
   ResponsiveContainer,
@@ -77,6 +78,15 @@ export default function DailyProfitView({
   traders,
   selectedTraderId,
 }: DailyProfitViewProps) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = !mounted || resolvedTheme === 'dark';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState<'all_weekdays' | 'active_only'>('all_weekdays');
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
@@ -340,85 +350,85 @@ export default function DailyProfitView({
       {/* TOP 4 DAILY KPI CARDS */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Moyenne / Jour Ouvré (Brut) */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Moyenne / Jour Ouvré (Brut)
               </span>
-              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-emerald-400 sm:text-2xl">
+              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-emerald-600 sm:text-2xl dark:text-emerald-400">
                 {formatVal(stats.avgProfitBrutPerDay)}
-                <span className="ml-1 text-xs font-semibold text-emerald-500/80">/j</span>
+                <span className="ml-1 text-xs font-semibold text-emerald-600/80 dark:text-emerald-500/80">/j</span>
               </h3>
-              <p className="mt-1 text-[11px] text-zinc-500">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-500">
                 Sur {stats.totalTradingDays} jours ouvrés (Lun-Ven)
               </p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-950/30 text-emerald-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
         </div>
 
         {/* Card 2: Moyenne / Jour Ouvré (Ajusté) */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Moyenne / Jour Ouvré (Ajusté)
               </span>
               <h3 className={`mt-1 font-mono text-xl font-bold tracking-tight sm:text-2xl ${
-                stats.avgProfitAjustePerDay >= 0 ? 'text-teal-400' : 'text-rose-400'
+                stats.avgProfitAjustePerDay >= 0 ? 'text-teal-600 dark:text-teal-400' : 'text-rose-600 dark:text-rose-400'
               }`}>
                 {stats.avgProfitAjustePerDay >= 0 ? '+' : ''}{formatVal(stats.avgProfitAjustePerDay)}
-                <span className="ml-1 text-xs font-semibold text-teal-500/80">/j</span>
+                <span className="ml-1 text-xs font-semibold text-teal-600/80 dark:text-teal-500/80">/j</span>
               </h3>
-              <p className="mt-1 text-[11px] text-zinc-500">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-500">
                 Après retraits et pertes partielles
               </p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-teal-500/20 bg-teal-950/30 text-teal-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-teal-500/20 bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-400">
               <Coins className="h-4 w-4" />
             </div>
           </div>
         </div>
 
         {/* Card 3: Total Jours Ouvrés */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Total Jours Ouvrés
               </span>
-              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-white sm:text-2xl">
+              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-slate-900 sm:text-2xl dark:text-white">
                 {stats.totalTradingDays}{' '}
-                <span className="text-xs font-semibold text-zinc-400">jours</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">jours</span>
               </h3>
-              <p className="mt-1 text-[11px] text-zinc-500">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-zinc-500">
                 {stats.activeDaysCount} jours avec activité · Lun-Ven
               </p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-zinc-300">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-zinc-300">
               <Calendar className="h-4 w-4" />
             </div>
           </div>
         </div>
 
         {/* Card 4: Meilleur Jour */}
-        <div className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 transition hover:border-white/10">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-slate-300 dark:border-white/[0.06] dark:bg-[#0d0e12] dark:hover:border-white/10">
           <div className="flex items-start justify-between">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Meilleur Jour
               </span>
-              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-amber-400 sm:text-2xl">
+              <h3 className="mt-1 font-mono text-xl font-bold tracking-tight text-amber-600 sm:text-2xl dark:text-amber-400">
                 {stats.bestDayRecord ? `+${formatVal(stats.bestDayRecord.beneficeBrut)}` : '$0.00'}
               </h3>
-              <p className="mt-1 text-[11px] text-zinc-500 truncate max-w-[200px]">
+              <p className="mt-1 text-[11px] text-slate-500 truncate max-w-[200px] dark:text-zinc-500">
                 {stats.bestDayRecord ? formatDateLabel(stats.bestDayRecord.date) : 'Aucun record'}
               </p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-950/30 text-amber-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
               <Trophy className="h-4 w-4" />
             </div>
           </div>
@@ -427,24 +437,24 @@ export default function DailyProfitView({
 
       {/* DAILY EVOLUTION BAR CHART */}
       {chartData.length > 0 && (
-        <section className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5">
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition-colors dark:border-white/[0.06] dark:bg-[#0d0e12] sm:p-5">
           <div className="mb-4 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div>
-              <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+              <h4 className="text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-zinc-100">
                 Évolution des Bénéfices par Jour Ouvré
               </h4>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400">
                 Calculé sur l&apos;ensemble des {stats.totalTradingDays} jours ouvrés (hors week-ends).
               </p>
             </div>
 
             <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-950/30 px-2.5 py-1 text-emerald-300 font-medium">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <div className="flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-50 px-2.5 py-1 text-emerald-700 font-medium dark:bg-emerald-950/30 dark:text-emerald-300">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                 <span>Bénéfice Brut</span>
               </div>
-              <div className="flex items-center gap-1.5 rounded-lg border border-teal-500/20 bg-teal-950/30 px-2.5 py-1 text-teal-300 font-medium">
-                <span className="h-2 w-2 rounded-full bg-teal-400" />
+              <div className="flex items-center gap-1.5 rounded-lg border border-teal-500/20 bg-teal-50 px-2.5 py-1 text-teal-700 font-medium dark:bg-teal-950/30 dark:text-teal-300">
+                <span className="h-2 w-2 rounded-full bg-teal-500 dark:bg-teal-400" />
                 <span>Bénéfice Ajusté</span>
               </div>
             </div>
@@ -453,10 +463,10 @@ export default function DailyProfitView({
           <div className="h-64 w-full font-mono text-xs lg:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? 'rgba(255,255,255,0.04)' : '#e2e8f0'} vertical={false} />
                 <XAxis
                   dataKey="date"
-                  stroke="#52525b"
+                  stroke={isDark ? '#52525b' : '#64748b'}
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -465,7 +475,7 @@ export default function DailyProfitView({
                   tickFormatter={formatDateTick}
                 />
                 <YAxis
-                  stroke="#52525b"
+                  stroke={isDark ? '#52525b' : '#64748b'}
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -473,12 +483,12 @@ export default function DailyProfitView({
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#121318',
-                    borderColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: isDark ? '#121318' : '#ffffff',
+                    borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0',
                     borderRadius: '12px',
-                    color: '#fafafa',
+                    color: isDark ? '#fafafa' : '#0f172a',
                     fontSize: '12px',
-                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.7)',
+                    boxShadow: isDark ? '0 20px 25px -5px rgba(0, 0, 0, 0.7)' : '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
                   }}
                   formatter={(value: unknown, name: unknown) => {
                     const label = name === 'beneficeBrut' ? 'Bénéfice Brut' : 'Bénéfice Ajusté';
@@ -490,7 +500,7 @@ export default function DailyProfitView({
                   {chartData.map((entry, index) => (
                     <Cell
                       key={`cell-brut-${index}`}
-                      fill={entry.beneficeBrut > 0 ? '#10b981' : '#27272a'}
+                      fill={entry.beneficeBrut > 0 ? '#10b981' : isDark ? '#27272a' : '#e2e8f0'}
                     />
                   ))}
                 </Bar>
@@ -509,27 +519,27 @@ export default function DailyProfitView({
       )}
 
       {/* DAILY RECORDS LIST / TABLE */}
-      <section className="rounded-2xl border border-white/[0.06] bg-[#0d0e12] p-4 sm:p-5">
+      <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition-colors dark:border-white/[0.06] dark:bg-[#0d0e12] sm:p-5">
         {/* TOOLBAR */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h4 className="text-sm font-bold tracking-tight text-zinc-100 sm:text-base">
+            <h4 className="text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-zinc-100">
               Historique Journalier
             </h4>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400">
               Détail jour par jour sur l&apos;ensemble des jours ouvrés ({filteredRecords.length} jour{filteredRecords.length > 1 ? 's' : ''})
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-1 rounded-xl border border-white/[0.08] bg-black/40 p-1">
+            <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-white/[0.08] dark:bg-black/40">
               <button
                 onClick={() => setFilterMode('all_weekdays')}
                 className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                   filterMode === 'all_weekdays'
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-white text-slate-900 shadow-xs dark:bg-white/10 dark:text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                 }`}
               >
                 <Calendar className="h-3.5 w-3.5" />
@@ -539,8 +549,8 @@ export default function DailyProfitView({
                 onClick={() => setFilterMode('active_only')}
                 className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                   filterMode === 'active_only'
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200'
+                    ? 'bg-white text-slate-900 shadow-xs dark:bg-white/10 dark:text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                 }`}
               >
                 <Filter className="h-3.5 w-3.5" />
@@ -550,32 +560,32 @@ export default function DailyProfitView({
 
             {/* Search Input */}
             <div className="relative min-w-[200px] flex-1 sm:flex-initial">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
               <input
                 type="text"
                 placeholder="Rechercher une date ou nom..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-8 w-full rounded-xl border border-white/[0.08] bg-black/40 pl-9 pr-3 text-xs text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-violet-500/50"
+                className="h-8 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-violet-500 dark:border-white/[0.08] dark:bg-black/40 dark:text-zinc-200 dark:placeholder:text-zinc-600 dark:focus:border-violet-500/50"
               />
             </div>
           </div>
         </div>
 
         {filteredRecords.length === 0 ? (
-          <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-black/20 p-6 text-center">
-            <Calendar className="mb-2 h-6 w-6 text-zinc-600" />
-            <p className="text-sm font-semibold text-zinc-300">Aucune donnée disponible</p>
-            <p className="mt-1 text-xs text-zinc-500">
+          <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center dark:border-white/10 dark:bg-black/20">
+            <Calendar className="mb-2 h-6 w-6 text-slate-400 dark:text-zinc-600" />
+            <p className="text-sm font-semibold text-slate-800 dark:text-zinc-300">Aucune donnée disponible</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">
               Les résultats s&apos;afficheront dès l&apos;enregistrement de challenges ou retraits.
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-black/20">
+          <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs dark:border-white/[0.06] dark:bg-black/20">
             <div className="overflow-x-auto">
               <table className="w-full table-auto border-collapse text-left text-xs">
                 <thead>
-                  <tr className="border-b border-white/[0.06] bg-[#121318]/90 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                  <tr className="border-b border-slate-200 bg-slate-50/90 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:border-white/[0.06] dark:bg-[#121318]/90 dark:text-zinc-400">
                     <th className="px-4 py-3">Date (Lun-Ven)</th>
                     {selectedTraderId === 'all' && <th className="px-4 py-3">Profil(s)</th>}
                     <th className="px-4 py-3">Activité</th>
@@ -585,7 +595,7 @@ export default function DailyProfitView({
                     <th className="px-4 py-3 text-right">PnL Net Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
                   {filteredRecords.map((rec) => {
                     const isExpanded = expandedDates.has(rec.date);
                     const hasItems = rec.challengeCount > 0 || rec.payoutCount > 0;
@@ -594,18 +604,18 @@ export default function DailyProfitView({
                       <Fragment key={rec.date}>
                         <tr
                           onClick={() => hasItems && toggleDateExpanded(rec.date)}
-                          className={`transition ${hasItems ? 'cursor-pointer hover:bg-white/[0.04]' : ''} ${
+                          className={`transition ${hasItems ? 'cursor-pointer hover:bg-slate-50/80 dark:hover:bg-white/[0.04]' : ''} ${
                             rec.isZeroDay
-                              ? 'bg-black/10 text-zinc-500 opacity-60 hover:opacity-100 hover:bg-white/[0.02]'
+                              ? 'bg-slate-50/40 text-slate-400 opacity-60 hover:opacity-100 hover:bg-slate-50 dark:bg-black/10 dark:text-zinc-500 dark:hover:bg-white/[0.02]'
                               : ''
-                          } ${isExpanded ? 'bg-white/[0.03]' : ''}`}
+                          } ${isExpanded ? 'bg-slate-50/80 dark:bg-white/[0.03]' : ''}`}
                         >
-                          <td className="px-4 py-3 font-medium text-zinc-200">
+                          <td className="px-4 py-3 font-medium text-slate-800 dark:text-zinc-200">
                             <div className="flex items-center gap-2">
                               {hasItems ? (
-                                <span className="text-zinc-500 hover:text-zinc-200 transition">
+                                <span className="text-slate-400 hover:text-slate-700 transition dark:text-zinc-500 dark:hover:text-zinc-200">
                                   {isExpanded ? (
-                                    <ChevronDown className="h-3.5 w-3.5 text-violet-400" />
+                                    <ChevronDown className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400" />
                                   ) : (
                                     <ChevronRight className="h-3.5 w-3.5" />
                                   )}
@@ -620,24 +630,24 @@ export default function DailyProfitView({
                           {selectedTraderId === 'all' && (
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1.5">
-                                <User className="h-3 w-3 text-zinc-500" />
-                                <span className="text-zinc-400 text-xs truncate max-w-[150px]">
+                                <User className="h-3 w-3 text-slate-400 dark:text-zinc-500" />
+                                <span className="text-slate-600 text-xs truncate max-w-[150px] dark:text-zinc-400">
                                   {rec.traderNames.length > 0 ? rec.traderNames.join(', ') : '-'}
                                 </span>
                               </div>
                             </td>
                           )}
 
-                          <td className="px-4 py-3 text-zinc-400">
+                          <td className="px-4 py-3 text-slate-600 dark:text-zinc-400">
                             {rec.isZeroDay ? (
-                              <span className="text-zinc-600 italic">Aucune activité ($0)</span>
+                              <span className="text-slate-400 italic dark:text-zinc-600">Aucune activité ($0)</span>
                             ) : (
                               <span className="inline-flex items-center gap-1 font-mono text-[11px]">
                                 {rec.challengeCount > 0 && `${rec.challengeCount} ch.`}
                                 {rec.challengeCount > 0 && rec.payoutCount > 0 && ' · '}
                                 {rec.payoutCount > 0 && `${rec.payoutCount} retr.`}
                                 {hasItems && (
-                                  <span className="ml-1 text-[10px] text-zinc-500 font-sans">
+                                  <span className="ml-1 text-[10px] text-slate-400 font-sans dark:text-zinc-500">
                                     {isExpanded ? '(fermer)' : '(détail)'}
                                   </span>
                                 )}
@@ -645,11 +655,11 @@ export default function DailyProfitView({
                             )}
                           </td>
 
-                          <td className="px-4 py-3 text-right font-mono font-bold text-emerald-400">
+                          <td className="px-4 py-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                             {rec.beneficeBrut > 0 ? `+${formatVal(rec.beneficeBrut)}` : '$0.00'}
                           </td>
 
-                          <td className="px-4 py-3 text-right font-mono font-medium text-amber-400">
+                          <td className="px-4 py-3 text-right font-mono font-medium text-amber-600 dark:text-amber-400">
                             {rec.payoutAmount > 0 || rec.specialLoss < 0
                               ? `-${formatVal(rec.payoutAmount + Math.abs(rec.specialLoss))}`
                               : '$0.00'}
@@ -658,10 +668,10 @@ export default function DailyProfitView({
                           <td
                             className={`px-4 py-3 text-right font-mono font-bold ${
                               rec.beneficeAjuste > 0
-                                ? 'text-teal-400'
+                                ? 'text-teal-600 dark:text-teal-400'
                                 : rec.beneficeAjuste < 0
-                                ? 'text-rose-400'
-                                : 'text-zinc-500'
+                                ? 'text-rose-600 dark:text-rose-400'
+                                : 'text-slate-400 dark:text-zinc-500'
                             }`}
                           >
                             {rec.beneficeAjuste > 0
@@ -672,10 +682,10 @@ export default function DailyProfitView({
                           <td
                             className={`px-4 py-3 text-right font-mono font-semibold ${
                               rec.netPnL > 0
-                                ? 'text-zinc-200'
+                                ? 'text-slate-900 dark:text-zinc-200'
                                 : rec.netPnL < 0
-                                ? 'text-rose-400/90'
-                                : 'text-zinc-600'
+                                ? 'text-rose-600 dark:text-rose-400/90'
+                                : 'text-slate-400 dark:text-zinc-600'
                             }`}
                           >
                             {rec.netPnL > 0 ? `+${formatVal(rec.netPnL)}` : formatVal(rec.netPnL)}
@@ -683,16 +693,16 @@ export default function DailyProfitView({
                         </tr>
 
                         {isExpanded && hasItems && (
-                          <tr className="bg-black/40 border-b border-white/[0.06]">
+                          <tr className="bg-slate-50/70 border-b border-slate-200 dark:bg-black/40 dark:border-white/[0.06]">
                             <td colSpan={selectedTraderId === 'all' ? 7 : 6} className="px-4 py-3">
-                              <div className="rounded-xl border border-white/[0.06] bg-[#0d0e12] p-3.5 space-y-3">
+                              <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-3 dark:border-white/[0.06] dark:bg-[#0d0e12]">
                                 {rec.challenges.length > 0 && (
                                   <div>
                                     <div className="flex items-center justify-between mb-2">
-                                      <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                                         Challenges de cette journée ({rec.challenges.length})
                                       </p>
-                                      <span className="text-[10px] text-zinc-500">
+                                      <span className="text-[10px] text-slate-400 dark:text-zinc-500">
                                         Attribué selon clôture (ou achat)
                                       </span>
                                     </div>
@@ -705,23 +715,23 @@ export default function DailyProfitView({
                                             key={c.id}
                                             className={`flex items-center justify-between rounded-xl border p-2.5 text-xs transition ${
                                               isPos
-                                                ? 'border-emerald-500/20 bg-emerald-950/20'
-                                                : 'border-white/[0.06] bg-black/30'
+                                                ? 'border-emerald-500/20 bg-emerald-50/60 dark:bg-emerald-950/20'
+                                                : 'border-slate-200 bg-slate-50 dark:border-white/[0.06] dark:bg-black/30'
                                             }`}
                                           >
                                             <div className="min-w-0 pr-2">
                                               <div className="flex items-center gap-1.5">
-                                                <span className="font-semibold text-zinc-100 truncate">
+                                                <span className="font-semibold text-slate-900 truncate dark:text-zinc-100">
                                                   {c.account_name}
                                                 </span>
-                                                <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-zinc-300">
+                                                <span className="rounded bg-slate-200/70 px-1.5 py-0.5 text-[10px] text-slate-700 dark:bg-white/[0.06] dark:text-zinc-300">
                                                   {traderMap.get(c.trader_id) || 'Profil'}
                                                 </span>
                                               </div>
-                                              <div className="mt-0.5 text-[11px] text-zinc-500">
+                                              <div className="mt-0.5 text-[11px] text-slate-500 dark:text-zinc-500">
                                                 Acheté le {c.purchase_date}
                                                 {c.closed_date && (
-                                                  <span className="text-emerald-400 font-medium">
+                                                  <span className="text-emerald-600 font-medium dark:text-emerald-400">
                                                     {' '}· Clôturé le {c.closed_date}
                                                   </span>
                                                 )}
@@ -730,17 +740,17 @@ export default function DailyProfitView({
                                             <div className="text-right shrink-0">
                                               <div
                                                 className={`font-mono font-bold text-sm ${
-                                                  isPos ? 'text-emerald-400' : 'text-zinc-400'
+                                                  isPos ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-zinc-400'
                                                 }`}
                                               >
                                                 {isPos ? `+${formatVal(tot)}` : formatVal(tot)}
                                               </div>
                                               {isPos ? (
-                                                <span className="inline-flex items-center rounded-md bg-emerald-950/80 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300">
+                                                <span className="inline-flex items-center rounded-md bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 text-[9px] font-bold text-emerald-800 dark:bg-emerald-950/80 dark:border-emerald-500/20 dark:text-emerald-300">
                                                   Bénéfice Brut
                                                 </span>
                                               ) : (
-                                                <span className="text-[10px] text-zinc-500">Non positif</span>
+                                                <span className="text-[10px] text-slate-400 dark:text-zinc-500">Non positif</span>
                                               )}
                                             </div>
                                           </div>
@@ -751,18 +761,18 @@ export default function DailyProfitView({
                                 )}
 
                                 {rec.payouts.length > 0 && (
-                                  <div className="border-t border-white/[0.06] pt-2.5">
-                                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-2">
+                                  <div className="border-t border-slate-200 pt-2.5 dark:border-white/[0.06]">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-2 dark:text-amber-400">
                                       Retraits personnels ({rec.payouts.length})
                                     </p>
                                     <div className="flex flex-wrap gap-2">
                                       {rec.payouts.map((p) => (
                                         <div
                                           key={p.id}
-                                          className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-950/20 px-3 py-1.5 text-xs text-amber-300"
+                                          className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-50 px-3 py-1.5 text-xs text-amber-800 dark:bg-amber-950/20 dark:text-amber-300"
                                         >
                                           <span className="font-mono font-bold">-{formatVal(p.amount)}</span>
-                                          <span className="text-[10px] text-amber-400/80">
+                                          <span className="text-[10px] text-amber-600 dark:text-amber-400/80">
                                             ({traderMap.get(p.trader_id) || 'Profil'})
                                           </span>
                                         </div>

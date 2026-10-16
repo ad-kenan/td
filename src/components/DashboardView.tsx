@@ -13,6 +13,7 @@ import PayoutModal from './PayoutModal';
 import DailyProfitView from './DailyProfitView';
 import InvestmentFilterBar from './InvestmentFilterBar';
 import TraderRandomizerWidget from './TraderRandomizerWidget';
+import HedgeCalculatorView from './HedgeCalculatorView';
 import {
   createTraderAction,
   updateTraderAction,
@@ -55,7 +56,7 @@ export default function DashboardView({
     removePayout,
   } = useTraderStore();
 
-  const [activeTab, setActiveTab] = useState<'challenges' | 'payouts' | 'daily'>('challenges');
+  const [activeTab, setActiveTab] = useState<'challenges' | 'payouts' | 'daily' | 'hedge'>('challenges');
   
   const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null);
@@ -274,6 +275,21 @@ export default function DashboardView({
               /jour
             </span>
           </button>
+          <button
+            onClick={() => setActiveTab('hedge')}
+            className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold tracking-tight transition ${
+              activeTab === 'hedge'
+                ? 'bg-white/10 text-white shadow-sm'
+                : 'text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            Hedge Calculator
+            <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono font-bold ${
+              activeTab === 'hedge' ? 'bg-violet-600/30 text-violet-300' : 'bg-white/[0.05] text-zinc-500'
+            }`}>
+              NQ
+            </span>
+          </button>
         </div>
 
         {activeTab === 'challenges' && (
@@ -305,6 +321,10 @@ export default function DashboardView({
             traders={traders}
             selectedTraderId={selectedTraderId}
           />
+        )}
+
+        {activeTab === 'hedge' && (
+          <HedgeCalculatorView embedded />
         )}
 
         {isChallengeModalOpen && (

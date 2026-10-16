@@ -14,6 +14,7 @@ import {
   Plus,
   X,
   Layers,
+  Calculator,
 } from 'lucide-react';
 
 interface DashboardHeaderProps {
@@ -241,6 +242,15 @@ export default function DashboardHeader({
 
       {/* PÔLE DROIT : Navigation transversale & Action Primaire */}
       <div className="flex items-center gap-2 sm:gap-3">
+        <Link
+          href="/hedge"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 text-xs font-medium text-zinc-300 transition hover:border-white/15 hover:bg-white/[0.05] hover:text-white"
+          title="Calculateur de Hedge NQ"
+        >
+          <Calculator className="h-3.5 w-3.5 text-violet-400" />
+          <span>Hedge NQ</span>
+        </Link>
+
         <Link
           href="/voyage"
           className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 text-xs font-medium text-zinc-300 transition hover:border-white/15 hover:bg-white/[0.05] hover:text-white"
